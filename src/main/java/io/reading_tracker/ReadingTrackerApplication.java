@@ -1,4 +1,4 @@
-package io.yeslee.reading_tracker;
+package io.reading_tracker;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
