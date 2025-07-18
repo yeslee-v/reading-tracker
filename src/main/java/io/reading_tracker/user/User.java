@@ -1,6 +1,9 @@
 package io.reading_tracker.user;
 
+import io.reading_tracker.book.Book;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,6 +15,8 @@ public class User {
   private String email;
   private Date createAt;
   private Date updateAt;
+
+  private Set<Book> books = new HashSet<>();
 
   public User(String nickname, String email) {
     this.nickname = nickname;

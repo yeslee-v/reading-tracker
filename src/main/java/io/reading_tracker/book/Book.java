@@ -1,6 +1,6 @@
 package io.reading_tracker.book;
 
-import io.reading_tracker.user.State;
+import io.reading_tracker.user.User;
 import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,20 +8,23 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Book {
-  Long id;
-  String name;
-  String author;
-  State state;
-  int fullPageNumber;
-  int currentPageNumber;
-  Date createAt;
-  Date updateAt;
+  private Long id;
+  private String title;
+  private String author;
+  private State state;
+  private int fullPage;
+  private int currentPage;
+  private Date createAt;
+  private Date updateAt;
 
-  public Book(String name, String author, State state, int fullPageNumber, int currentPageNumber) {
-    this.name = name;
+  private User user;
+
+  public Book(User user, String title, String author, State state, int fullPage, int currentPage) {
+    this.user = user;
+    this.title = title;
     this.author = author;
     this.state = state;
-    this.fullPageNumber = fullPageNumber;
-    this.currentPageNumber = currentPageNumber;
+    this.fullPage = fullPage;
+    this.currentPage = currentPage;
   }
 }
