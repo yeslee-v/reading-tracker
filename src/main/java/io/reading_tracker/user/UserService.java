@@ -3,7 +3,7 @@ package io.reading_tracker.user;
 import java.util.Optional;
 
 public interface UserService {
-  void join(String nickname, String email);
+  void join(User user);
 
   Optional<User> findUser(String email);
 

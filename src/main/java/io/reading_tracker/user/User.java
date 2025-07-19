@@ -18,7 +18,8 @@ public class User {
 
   private Set<Book> books = new HashSet<>();
 
-  public User(String nickname, String email) {
+  public User(Long id, String nickname, String email) {
+    this.id = id;
     this.nickname = nickname;
     this.email = email;
     this.createAt = new Date();

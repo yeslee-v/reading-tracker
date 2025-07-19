@@ -11,13 +11,14 @@ public class UserServiceImpl implements UserService{
   }
 
   @Override
-  public void join(String nickname, String email) {
-    User user = userRepository.findByEmail(email).orElseThrow(() ->
-        new IllegalArgumentException("User already exists!"));
+  public void join(User user) {
+    Optional<User> existUser = userRepository.findByEmail(user.getEmail());
 
-    User newUser = new User(nickname, email);
+    if (existUser.isPresent()) {
+      throw new IllegalArgumentException("User already exists");
+    }
 
-    userRepository.save(newUser);
+    userRepository.save(user);
   }
 
   @Override
