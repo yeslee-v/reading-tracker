@@ -20,11 +20,14 @@ public class Book {
   private User user;
 
   public Book(User user, String title, String author, State state, int fullPage, int currentPage) {
-    this.user = user;
+    this.id = null; // ID can be set later if managed externally
     this.title = title;
     this.author = author;
     this.state = state;
     this.fullPage = fullPage;
     this.currentPage = currentPage;
+    this.createAt = new Date();
+    this.updateAt = new Date();
+    this.user = user;
   }
 }
