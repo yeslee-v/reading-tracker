@@ -2,18 +2,13 @@ package io.reading_tracker.book;
 
 import io.reading_tracker.user.User;
 import io.reading_tracker.user.UserService;
-import io.reading_tracker.user.UserServiceImpl;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public class BookServiceImpl implements BookService {
   private final BookRepository bookRepository;
   private final UserService userService;
-
-  Map<Long, Book> books = new HashMap<>();
 
   public BookServiceImpl(BookRepository bookRepository, UserService userService) {
     this.bookRepository = bookRepository;
