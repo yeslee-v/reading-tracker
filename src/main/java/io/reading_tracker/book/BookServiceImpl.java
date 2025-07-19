@@ -50,6 +50,10 @@ public class BookServiceImpl implements BookService {
   public void updateBook(Long bookId, String title, String author, State state, int currentPage) {
     Book book = bookRepository.findById(bookId);
 
+    if (book == null) {
+      throw new IllegalArgumentException("Book(id: " + bookId + ") not found!");
+    }
+
     if (!title.isEmpty()) {
       book.setTitle(title);
     }
