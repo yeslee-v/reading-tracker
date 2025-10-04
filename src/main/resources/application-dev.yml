@@ -1,0 +1,15 @@
+server:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DEV_DB_HOSTNAME:localhost}:${DEV_DB_PORT:3306}/reading_tracker_dev
+    username: ${DEV_DB_USERNAME:root}
+    password: ${DEV_DB_PASSWORD}
+
+logging:
+  level:
+    com.yourcompany.myproject: DEBUG
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
