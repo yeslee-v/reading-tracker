@@ -1,15 +1,14 @@
-server:
+spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://${AWS_RDS_HOSTNAME}:${AWS_RDS_PORT}/${AWS_RDS_DB_NAME}
     username: ${AWS_RDS_USERNAME}
     password: ${AWS_RDS_PASSWORD}
 
-logging:
-  level:
-    com.yourcompany.myproject: INFO
-
-spring:
   jpa:
     hibernate:
       ddl-auto: validate
+
+logging:
+  level:
+    com.yourcompany.myproject: INFO
