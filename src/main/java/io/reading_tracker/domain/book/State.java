@@ -1,4 +1,4 @@
-package io.reading_tracker.book;
+package io.reading_tracker.domain.book;
 
 public enum State {
   IN_PROGRESS,

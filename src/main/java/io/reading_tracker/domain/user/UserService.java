@@ -1,4 +1,4 @@
-package io.reading_tracker.user;
+package io.reading_tracker.domain.user;
 
 import java.util.Optional;
 

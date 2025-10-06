@@ -1,4 +1,4 @@
-package io.reading_tracker.book;
+package io.reading_tracker.domain.book;
 
 import java.util.HashMap;
 import java.util.List;
