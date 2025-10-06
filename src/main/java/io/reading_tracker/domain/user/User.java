@@ -1,6 +1,6 @@
-package io.reading_tracker.user;
+package io.reading_tracker.domain.user;
 
-import io.reading_tracker.book.Book;
+import io.reading_tracker.domain.book.Book;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;

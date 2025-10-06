@@ -1,7 +1,7 @@
-package io.reading_tracker.book;
+package io.reading_tracker.domain.book;
 
-import io.reading_tracker.user.User;
-import io.reading_tracker.user.UserService;
+import io.reading_tracker.domain.user.User;
+import io.reading_tracker.domain.user.UserService;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;

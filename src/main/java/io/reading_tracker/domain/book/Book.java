@@ -1,6 +1,6 @@
-package io.reading_tracker.book;
+package io.reading_tracker.domain.book;
 
-import io.reading_tracker.user.User;
+import io.reading_tracker.domain.user.User;
 import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
