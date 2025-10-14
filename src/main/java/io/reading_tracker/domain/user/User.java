@@ -1,27 +1,73 @@
 package io.reading_tracker.domain.user;
 
-import io.reading_tracker.domain.book.Book;
-import java.util.Date;
-import java.util.HashSet;
+import io.reading_tracker.domain.BaseEntity;
+import io.reading_tracker.domain.userbook.UserBook;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
+import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 @Getter
-@Setter
-public class User {
-  private Long id;
-  private String nickname;
-  private String email;
-  private Date createAt;
-  private Date updateAt;
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Entity
+@Table(name = "users")
+public class User extends BaseEntity {
 
-  private Set<Book> books = new HashSet<>();
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+
+  @Column(nullable = false, length = 50)
+  private String nickname;
+
+  @Column(nullable = false, unique = true, length = 255)
+  private String email;
+
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+  private Set<UserBook> userBooks = new LinkedHashSet<>();
 
   public User(String nickname, String email) {
     this.nickname = nickname;
     this.email = email;
-    this.createAt = new Date();
-    this.updateAt = new Date();
+  }
+
+  public void updateProfile(String nickname, String email) {
+    this.nickname = nickname;
+    this.email = email;
+  }
+
+  public void changeNickname(String nickname) {
+    if (nickname == null || nickname.isBlank()) {
+      throw new IllegalArgumentException("닉네임은 비어 있을 수 없습니다.");
+    }
+
+    this.nickname = nickname;
+  }
+
+  public void addUserBook(UserBook userBook) {
+    Objects.requireNonNull(userBook, "userBook은 null일 수 없습니다.");
+    userBooks.add(userBook);
+    userBook.setUser(this);
+  }
+
+  public void removeUserBook(UserBook userBook) {
+    if (userBook == null) {
+      return;
+    }
+
+    if (userBooks.remove(userBook)) {
+      userBook.setUser(null);
+    }
   }
 }

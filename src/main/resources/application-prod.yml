@@ -7,7 +7,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update # TODO: Flyway로 변경 필요
 
 logging:
   level:

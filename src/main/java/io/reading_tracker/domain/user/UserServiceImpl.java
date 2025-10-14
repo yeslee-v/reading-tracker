@@ -1,36 +1,35 @@
 package io.reading_tracker.domain.user;
 
-import java.util.Date;
+import io.reading_tracker.exception.UserNotFoundException;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-public class UserServiceImpl implements UserService{
+@Service
+@Transactional(readOnly = true)
+@RequiredArgsConstructor
+public class UserServiceImpl implements UserService {
+
   private final UserRepository userRepository;
 
-  public UserServiceImpl(UserRepository userRepository) {
-    this.userRepository = userRepository;
+  @Override
+  public User getUserById(Long userId) {
+    return userRepository
+        .findById(userId)
+        .orElseThrow(() -> new UserNotFoundException(userId));
   }
 
   @Override
-  public void join(String nickname, String email) {
-    User user = userRepository.findByEmail(email).orElseThrow(() ->
-        new IllegalArgumentException("User already exists!"));
-
-    User newUser = new User(nickname, email);
-
-    userRepository.save(newUser);
-  }
-
-  @Override
-  public Optional<User> findUser(String email) {
+  public Optional<User> findUserByEmail(String email) {
     return userRepository.findByEmail(email);
   }
 
   @Override
-  public void updateUser(String nickname, String email) {
-    User user = userRepository.findByEmail(email).orElseThrow(() ->
-        new IllegalArgumentException("User not found!"));
-
-    user.setNickname(nickname);
-    user.setUpdateAt(new Date());
+  @Transactional
+  public User updateNickname(Long userId, String nickname) {
+    User user = getUserById(userId);
+    user.changeNickname(nickname);
+    return user;
   }
 }

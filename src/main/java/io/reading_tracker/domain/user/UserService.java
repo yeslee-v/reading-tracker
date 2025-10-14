@@ -3,9 +3,11 @@ package io.reading_tracker.domain.user;
 import java.util.Optional;
 
 public interface UserService {
-  void join(String nickname, String email);
 
-  Optional<User> findUser(String email);
+  User getUserById(Long userId);
 
-  void updateUser(String nickname, String email);
+  Optional<User> findUserByEmail(String email);
+
+  User updateNickname(Long userId, String nickname);
 }
+
