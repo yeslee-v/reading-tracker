@@ -1,5 +1,6 @@
 package io.reading_tracker.config;
 
+import io.reading_tracker.auth.oauth.CustomOAuth2UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -17,7 +18,8 @@ public class SecurityConfig {
 
   @Bean
   public SecurityFilterChain springSecurityFilterChain(HttpSecurity http,
-      CorsConfigurationSource corsConfigurationSource) throws Exception {
+      CorsConfigurationSource corsConfigurationSource,
+      CustomOAuth2UserService customOAuth2UserService) throws Exception {
     http
         .cors(cors -> cors.configurationSource(corsConfigurationSource))
         .csrf(csrf -> csrf.disable())
@@ -35,6 +37,9 @@ public class SecurityConfig {
               .anyRequest().authenticated()
         )
         .oauth2Login(oauth2 -> oauth2
+            .userInfoEndpoint(userInfo -> userInfo
+                .userService(customOAuth2UserService)
+            )
             .defaultSuccessUrl("http://localhost:3000", true)
         )
         .logout(logout -> logout
