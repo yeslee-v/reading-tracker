@@ -1,6 +1,7 @@
 package io.reading_tracker.domain.user;
 
 import io.reading_tracker.exception.UserNotFoundException;
+import io.reading_tracker.repository.UserRepository;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
