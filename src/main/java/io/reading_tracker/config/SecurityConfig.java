@@ -17,7 +17,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
   @Bean
-  public SecurityFilterChain springSecurityFilterChain(HttpSecurity http,
+  public SecurityFilterChain securityFilterChain(HttpSecurity http,
       CorsConfigurationSource corsConfigurationSource,
       CustomOAuth2UserService customOAuth2UserService) throws Exception {
     http
