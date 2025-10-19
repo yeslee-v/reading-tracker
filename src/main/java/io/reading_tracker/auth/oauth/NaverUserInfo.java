@@ -22,6 +22,14 @@ public class NaverUserInfo implements OAuth2UserInfo {
     if (this.attributes.get("id") == null) {
       throw new IllegalArgumentException("네이버 OAuth2 응답에 id가 없습니다");
     }
+
+    if (this.attributes.get("nickname") == null) {
+      throw new IllegalArgumentException("네이버 OAuth2 응답에 nickname이 없습니다");
+    }
+
+    if (this.attributes.get("email") == null) {
+      throw new IllegalArgumentException("네이버 OAuth2 응답에 email이 없습니다");
+    }
   }
 
   @Override
@@ -36,8 +44,7 @@ public class NaverUserInfo implements OAuth2UserInfo {
 
   @Override
   public String getName() {
-    String name = attributes.get("name").toString();
-    return name != null ? name : getEmail().split("@")[0];
+    return attributes.get("nickname").toString();
   }
 
   @Override
