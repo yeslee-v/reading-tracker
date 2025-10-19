@@ -1,5 +1,6 @@
-package io.reading_tracker.domain.user;
+package io.reading_tracker.service;
 
+import io.reading_tracker.domain.user.User;
 import java.util.Optional;
 
 public interface UserService {

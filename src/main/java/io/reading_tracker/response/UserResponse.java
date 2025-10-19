@@ -1,4 +1,6 @@
-package io.reading_tracker.domain.user;
+package io.reading_tracker.response;
+
+import io.reading_tracker.domain.user.User;
 
 public record UserResponse(Long id, String nickname, String email) {
 

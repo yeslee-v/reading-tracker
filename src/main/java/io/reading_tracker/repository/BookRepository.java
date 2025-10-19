@@ -1,6 +1,4 @@
-package io.reading_tracker.domain.book;
-
-import java.util.List;
+package io.reading_tracker.repository;
 
 public interface BookRepository {
 //  List<Book> findByUserId(Long userId);

@@ -3,9 +3,12 @@ package io.reading_tracker.domain.user;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.reading_tracker.controller.UserController;
+import io.reading_tracker.request.UpdateNicknameRequest;
 import io.reading_tracker.exception.UserNotFoundException;
 import io.reading_tracker.repository.UserRepository;
 import io.reading_tracker.response.ApiResponse;
+import io.reading_tracker.response.UserResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

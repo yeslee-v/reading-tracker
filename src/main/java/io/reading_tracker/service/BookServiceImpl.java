@@ -1,10 +1,4 @@
-package io.reading_tracker.domain.book;
-
-import io.reading_tracker.domain.user.User;
-import io.reading_tracker.domain.user.UserService;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+package io.reading_tracker.service;
 
 public class BookServiceImpl implements BookService {
 //  private final BookRepository bookRepository;

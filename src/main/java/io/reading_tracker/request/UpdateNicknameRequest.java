@@ -1,4 +1,4 @@
-package io.reading_tracker.domain.user;
+package io.reading_tracker.request;
 
 public record UpdateNicknameRequest(String nickname) {
 }

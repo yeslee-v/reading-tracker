@@ -1,5 +1,9 @@
-package io.reading_tracker.domain.user;
+package io.reading_tracker.controller;
 
+import io.reading_tracker.request.UpdateNicknameRequest;
+import io.reading_tracker.domain.user.User;
+import io.reading_tracker.response.UserResponse;
+import io.reading_tracker.service.UserService;
 import io.reading_tracker.exception.UserNotFoundException;
 import io.reading_tracker.response.ApiResponse;
 import lombok.RequiredArgsConstructor;

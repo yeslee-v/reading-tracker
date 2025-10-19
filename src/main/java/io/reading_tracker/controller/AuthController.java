@@ -1,6 +1,6 @@
-package io.reading_tracker.auth;
+package io.reading_tracker.controller;
 
-import io.reading_tracker.domain.user.UserInfoResponse;
+import io.reading_tracker.response.UserInfoResponse;
 import java.util.Map;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
