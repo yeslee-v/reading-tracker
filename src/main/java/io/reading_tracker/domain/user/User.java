@@ -43,11 +43,6 @@ public class User extends BaseEntity {
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   private Set<UserBook> userBooks = new LinkedHashSet<>();
 
-  public User(String nickname, String email) {
-    this.nickname = nickname;
-    this.email = email;
-  }
-
   public User(String nickname, String email, String provider, String providerId) {
     this.nickname = nickname;
     this.email = email;

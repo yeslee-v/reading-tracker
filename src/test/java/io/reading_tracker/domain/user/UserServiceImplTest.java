@@ -32,7 +32,7 @@ class UserServiceImplTest {
   @Test
   @DisplayName("아이디로 사용자를 조회한다")
   void getUserById_success() {
-    User user = createUser(1L, "tester", "tester@example.com");
+    User user = createUser(1L, "tester", "tester@example.com", "local", "local-id");
     when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
     User result = userService.getUserById(1L);
@@ -53,7 +53,7 @@ class UserServiceImplTest {
   @Test
   @DisplayName("이메일로 사용자를 찾는다")
   void findUserByEmail() {
-    User user = createUser(1L, "tester", "tester@example.com");
+    User user = createUser(1L, "tester", "tester@example.com", "local", "local-id");
     when(userRepository.findByEmail("tester@example.com")).thenReturn(Optional.of(user));
 
     Optional<User> result = userService.findUserByEmail("tester@example.com");
@@ -64,7 +64,7 @@ class UserServiceImplTest {
   @Test
   @DisplayName("닉네임을 수정한다")
   void updateNickname_success() {
-    User user = createUser(1L, "tester", "tester@example.com");
+    User user = createUser(1L, "tester", "tester@example.com", "local", "local-id");
     when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
     User updated = userService.updateNickname(1L, "new-nickname");
@@ -75,7 +75,7 @@ class UserServiceImplTest {
   @Test
   @DisplayName("빈 닉네임으로 수정하면 예외를 던진다")
   void updateNickname_blank() {
-    User user = createUser(1L, "tester", "tester@example.com");
+    User user = createUser(1L, "tester", "tester@example.com", "local", "local-id");
     when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
     assertThatThrownBy(() -> userService.updateNickname(1L, " "))
@@ -83,8 +83,8 @@ class UserServiceImplTest {
         .hasMessage("닉네임은 비어 있을 수 없습니다.");
   }
 
-  private User createUser(Long id, String nickname, String email) {
-    User user = new User(nickname, email);
+  private User createUser(Long id, String nickname, String email, String provider, String providerId) {
+    User user = new User(nickname, email, provider, providerId);
     ReflectionTestUtils.setField(user, "id", id);
     return user;
   }

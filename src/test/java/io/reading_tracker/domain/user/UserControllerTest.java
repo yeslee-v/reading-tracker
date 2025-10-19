@@ -30,7 +30,7 @@ class UserControllerTest {
   @Test
   @DisplayName("아이디로 유저 조회")
   void getUserById() {
-    User saved = userRepository.save(new User("tester", "tester@example.com"));
+    User saved = userRepository.save(new User("tester", "tester@example.com", "local", "local-id"));
 
     ApiResponse<UserResponse> response = userController.getUserById(saved.getId());
 
@@ -44,7 +44,7 @@ class UserControllerTest {
   @Test
   @DisplayName("이메일로 유저 검색")
   void findUserByEmail() {
-    userRepository.save(new User("tester", "tester@example.com"));
+    userRepository.save(new User("tester", "tester@example.com", "local", "local-id"));
 
     ApiResponse<UserResponse> response = userController.findUserByEmail("tester@example.com");
 
@@ -64,7 +64,7 @@ class UserControllerTest {
   @Test
   @DisplayName("유저 닉네임 수정")
   void updateNickname() {
-    User saved = userRepository.save(new User("tester", "tester@example.com"));
+    User saved = userRepository.save(new User("tester", "tester@example.com", "local", "local-id"));
     UpdateNicknameRequest request = new UpdateNicknameRequest("new-nickname");
 
     ApiResponse<UserResponse> response = userController.updateNickname(saved.getId(), request);
@@ -77,7 +77,7 @@ class UserControllerTest {
   @Test
   @DisplayName("빈 닉네임 예외 처리")
   void updateNickname_blank() {
-    User saved = userRepository.save(new User("tester", "tester@example.com"));
+    User saved = userRepository.save(new User("tester", "tester@example.com", "local", "local-id"));
     UpdateNicknameRequest request = new UpdateNicknameRequest(" ");
 
     assertThatThrownBy(() -> userController.updateNickname(saved.getId(), request))
