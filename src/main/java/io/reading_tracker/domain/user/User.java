@@ -31,15 +31,23 @@ public class User extends BaseEntity {
   @Column(nullable = false, length = 50)
   private String nickname;
 
-  @Column(nullable = false, unique = true, length = 255)
+  @Column(nullable = false, length = 255)
   private String email;
+
+  @Column(nullable = false, length = 20)
+  private String provider;
+
+  @Column(name = "provider_id", nullable = false, length = 100)
+  private String providerId;
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   private Set<UserBook> userBooks = new LinkedHashSet<>();
 
-  public User(String nickname, String email) {
+  public User(String nickname, String email, String provider, String providerId) {
     this.nickname = nickname;
     this.email = email;
+    this.provider = provider;
+    this.providerId = providerId;
   }
 
   public void updateProfile(String nickname, String email) {

@@ -3,8 +3,12 @@ package io.reading_tracker.domain.user;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.reading_tracker.controller.UserController;
+import io.reading_tracker.request.UpdateNicknameRequest;
 import io.reading_tracker.exception.UserNotFoundException;
+import io.reading_tracker.repository.UserRepository;
 import io.reading_tracker.response.ApiResponse;
+import io.reading_tracker.response.UserResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +30,7 @@ class UserControllerTest {
   @Test
   @DisplayName("아이디로 유저 조회")
   void getUserById() {
-    User saved = userRepository.save(new User("tester", "tester@example.com"));
+    User saved = userRepository.save(new User("tester", "tester@example.com", "local", "local-id"));
 
     ApiResponse<UserResponse> response = userController.getUserById(saved.getId());
 
@@ -40,7 +44,7 @@ class UserControllerTest {
   @Test
   @DisplayName("이메일로 유저 검색")
   void findUserByEmail() {
-    userRepository.save(new User("tester", "tester@example.com"));
+    userRepository.save(new User("tester", "tester@example.com", "local", "local-id"));
 
     ApiResponse<UserResponse> response = userController.findUserByEmail("tester@example.com");
 
@@ -60,7 +64,7 @@ class UserControllerTest {
   @Test
   @DisplayName("유저 닉네임 수정")
   void updateNickname() {
-    User saved = userRepository.save(new User("tester", "tester@example.com"));
+    User saved = userRepository.save(new User("tester", "tester@example.com", "local", "local-id"));
     UpdateNicknameRequest request = new UpdateNicknameRequest("new-nickname");
 
     ApiResponse<UserResponse> response = userController.updateNickname(saved.getId(), request);
@@ -73,7 +77,7 @@ class UserControllerTest {
   @Test
   @DisplayName("빈 닉네임 예외 처리")
   void updateNickname_blank() {
-    User saved = userRepository.save(new User("tester", "tester@example.com"));
+    User saved = userRepository.save(new User("tester", "tester@example.com", "local", "local-id"));
     UpdateNicknameRequest request = new UpdateNicknameRequest(" ");
 
     assertThatThrownBy(() -> userController.updateNickname(saved.getId(), request))
