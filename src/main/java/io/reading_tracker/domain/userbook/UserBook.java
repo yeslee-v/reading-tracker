@@ -47,37 +47,34 @@ public class UserBook extends BaseEntity {
   @Column(nullable = false, length = 20)
   private State state = State.PLANNED;
 
-  @Column(name = "full_page")
-  private Integer fullPage;
+  @Column(name = "total_pages", nullable = false)
+  private Integer totalPages;
 
   @Column(name = "current_page", nullable = false)
   private Integer currentPage = 1;
 
-  @Version
-  private int version;
-
-  public UserBook(User user, Book book, State state, Integer fullPage, Integer currentPage) {
+  public UserBook(User user, Book book, State state, Integer totalPages, Integer currentPage) {
     setUser(user);
     setBook(book);
-    this.fullPage = fullPage;
+    this.totalPages = totalPages;
     this.currentPage = currentPage == null ? 1 : currentPage;
-    validateProgress(this.fullPage, this.currentPage);
+    validateProgress(this.totalPages, this.currentPage);
     this.state = State.PLANNED;
-    updateStateAfterProgress(state, this.fullPage, this.currentPage, false, true);
+    updateStateAfterProgress(state, this.totalPages, this.currentPage, false, true);
   }
 
-  public void updateProgress(State state, Integer fullPage, Integer currentPage) {
-    Integer newFullPage = fullPage != null ? fullPage : this.fullPage;
+  public void updateProgress(State state, Integer totalPages, Integer currentPage) {
+    Integer newTotalPages = totalPages != null ? totalPages : this.totalPages;
     Integer newCurrentPage = currentPage != null ? currentPage : this.currentPage;
 
-    validateProgress(newFullPage, newCurrentPage);
+    validateProgress(newTotalPages, newCurrentPage);
 
     boolean currentPageChanged = !newCurrentPage.equals(this.currentPage);
 
-    this.fullPage = newFullPage;
+    this.totalPages = newTotalPages;
     this.currentPage = newCurrentPage;
 
-    updateStateAfterProgress(state, newFullPage, newCurrentPage, currentPageChanged, false);
+    updateStateAfterProgress(state, newTotalPages, newCurrentPage, currentPageChanged, false);
   }
 
   public void setUser(User user) {
@@ -88,43 +85,36 @@ public class UserBook extends BaseEntity {
     this.book = book;
   }
 
-  private void validateProgress(Integer fullPage, Integer currentPage) {
+  private void validateProgress(Integer totalPages, Integer currentPage) {
     if (currentPage == null || currentPage < 1) {
       throw new IllegalArgumentException("현재 페이지는 1 이상이어야 합니다.");
     }
 
-    if (fullPage != null && currentPage > fullPage) {
+    if (totalPages != null && currentPage > totalPages) {
       throw new IllegalArgumentException("현재 페이지는 전체 페이지를 초과할 수 없습니다.");
     }
   }
 
   private void updateStateAfterProgress(
-      State requestedState,
-      Integer fullPage,
-      Integer currentPage,
-      boolean currentPageChanged,
-      boolean initialRegistration) {
+    State requestedState,
+    Integer totalPages,
+    Integer currentPage,
+    boolean currentPageChanged,
+    boolean initialRegistration) {
 
-    if (requestedState != null) {
-      if (requestedState == State.ARCHIVED) {
-        this.state = State.ARCHIVED;
-        return;
-      }
-
-      if (requestedState == State.COMPLETED) {
-        this.state = State.COMPLETED;
-        return;
-      }
-
-      if (requestedState == State.IN_PROGRESS) {
-        this.state = State.IN_PROGRESS;
-        return;
-      }
-
-      if (requestedState == State.PLANNED) {
+    switch (requestedState) {
+      case State.PLANNED:
         this.state = State.PLANNED;
         return;
-      }
+      case State.IN_PROGRESS:
+        this.state = State.IN_PROGRESS;
+        return;
+      case State.COMPLETED:
+        this.state = State.COMPLETED;
+        return;
+      case State.ARCHIVED:
+        this.state = State.ARCHIVED;
+        return;
     }
 
     if (initialRegistration) {
@@ -132,7 +122,7 @@ public class UserBook extends BaseEntity {
       return;
     }
 
-    if (fullPage != null && currentPage != null && currentPage.equals(fullPage)) {
+    if (currentPage.equals(totalPages)) {
       this.state = State.COMPLETED;
       return;
     }
@@ -142,14 +132,14 @@ public class UserBook extends BaseEntity {
       return;
     }
 
-    if (this.state == State.PLANNED && currentPage != null && currentPage > 1) {
+    if (this.state == State.PLANNED && currentPage > 1) {
       this.state = State.IN_PROGRESS;
     }
   }
 
   @PrePersist
   private void ensureCurrentPage() {
-    if (currentPage == null || currentPage < 1) {
+    if (currentPage < 1) {
       currentPage = 1;
     }
   }

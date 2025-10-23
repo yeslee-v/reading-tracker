@@ -1,9 +1,10 @@
 package io.reading_tracker.service;
 
+import io.reading_tracker.domain.book.State;
+import io.reading_tracker.response.GetBookListResponse;
+
 public interface BookService {
-//  List<Book> findBooksByUser(String email);
-//
-//  void addBook(String email, String title, String author, int fullPage);
-//
-//  void updateBook(Long bookId, String title, String author, State state, int currentPage);
+
+  GetBookListResponse getBookList(Long userId, State stateFilter, int page);
 }
+
