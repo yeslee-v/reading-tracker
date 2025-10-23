@@ -7,4 +7,3 @@ public interface BookService {
 
   GetBookListResponse getBookList(Long userId, State stateFilter, int page);
 }
-

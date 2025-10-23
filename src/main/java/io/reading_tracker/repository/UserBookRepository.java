@@ -16,4 +16,3 @@ public interface UserBookRepository extends JpaRepository<UserBook, Long> {
 
   int countByUserIdAndState(Long userId, State state);
 }
-

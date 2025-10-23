@@ -44,7 +44,7 @@ public class BookController {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "size는 1 이상이어야 합니다.");
     }
 
-    State stateFilter = resolveState(state);
+    State stateFilter = state == null ? State.IN_PROGRESS : resolveState(state);
 
     GetBookListResponse response = bookService.getBookList(
         principalDetails.getUserId(),
@@ -70,4 +70,3 @@ public class BookController {
     };
   }
 }
-
