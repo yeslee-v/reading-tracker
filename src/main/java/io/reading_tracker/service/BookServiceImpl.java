@@ -55,13 +55,11 @@ public class BookServiceImpl implements BookService {
     Integer totalPages = userBook.getTotalPages();
     Integer currentPage = userBook.getCurrentPage();
 
-    String publisher = userBook.getBook().getPublisher();
-
     return new GetBookListResponse.BookItem(
         userBook.getId(),
         userBook.getBook().getName(),
         userBook.getBook().getAuthor(),
-        publisher == null ? "작가 미상" : publisher,
+        userBook.getBook().getPublisher(),
         currentPage,
         totalPages,
         calculateProgress(currentPage, totalPages),
