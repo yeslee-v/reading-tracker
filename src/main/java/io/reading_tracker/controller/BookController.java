@@ -21,7 +21,6 @@ import org.springframework.web.server.ResponseStatusException;
 public class BookController {
 
   private static final int DEFAULT_PAGE = 1;
-  private static final int DEFAULT_SIZE = 10;
 
   private final BookService bookService;
 
@@ -29,8 +28,7 @@ public class BookController {
   public ApiResponse<GetBookListResponse> listBooks(
       @AuthenticationPrincipal PrincipalDetails principalDetails,
       @RequestParam(name = "state", required = false) String state,
-      @RequestParam(name = "page", defaultValue = "" + DEFAULT_PAGE) int page,
-      @RequestParam(name = "size", defaultValue = "" + DEFAULT_SIZE) int size
+      @RequestParam(name = "page", defaultValue = "" + DEFAULT_PAGE) int page
   ) {
     if (principalDetails == null) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
@@ -38,10 +36,6 @@ public class BookController {
 
     if (page < 1) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "page는 1 이상이어야 합니다.");
-    }
-
-    if (size < 1) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "size는 1 이상이어야 합니다.");
     }
 
     State stateFilter = state == null ? State.IN_PROGRESS : resolveState(state);
