@@ -21,43 +21,37 @@ public class NaverBookSearchServiceImpl implements BookSearchService {
 
   public NaverBookSearchServiceImpl(
       @Value("${NAVER_CLIENT_ID}") String clientId,
-      @Value("${NAVER_CLIENT_SECRET}") String clientSecret
-  ) {
-    this.restClient = RestClient.builder()
-        .baseUrl(BASE_URL)
-        .defaultHeader("X-Naver-Client-Id", clientId)
-        .defaultHeader("X-Naver-Client-Secret", clientSecret)
-        .build();
+      @Value("${NAVER_CLIENT_SECRET}") String clientSecret) {
+    this.restClient =
+        RestClient.builder()
+            .baseUrl(BASE_URL)
+            .defaultHeader("X-Naver-Client-Id", clientId)
+            .defaultHeader("X-Naver-Client-Secret", clientSecret)
+            .build();
   }
 
   @Override
   public SearchBookResponse search(String query) {
     try {
-      NaverBookSearchResponse response = restClient.get()
-          .uri(uriBuilder -> uriBuilder
-              .path(SEARCH_PATH)
-              .queryParam("query", query)
-              .build())
-          .retrieve()
-          .body(NaverBookSearchResponse.class);
+      NaverBookSearchResponse response =
+          restClient
+              .get()
+              .uri(uriBuilder -> uriBuilder.path(SEARCH_PATH).queryParam("query", query).build())
+              .retrieve()
+              .body(NaverBookSearchResponse.class);
 
       if (response == null) {
         return new SearchBookResponse(0, 0, Collections.emptyList());
       }
 
-      List<NaverBookItem> items = response.items() == null
-          ? Collections.emptyList()
-          : response.items();
+      List<NaverBookItem> items =
+          response.items() == null ? Collections.emptyList() : response.items();
 
-      List<SearchBookResponse.BookItem> mappedItems = items.stream()
-          .map(this::toBookItem)
-          .toList();
+      List<SearchBookResponse.BookItem> mappedItems = items.stream().map(this::toBookItem).toList();
 
-      return new SearchBookResponse(
-          response.total(),
-          response.display(),
-          mappedItems
-      );
+      // 캐싱 TTL
+
+      return new SearchBookResponse(response.total(), response.display(), mappedItems);
     } catch (RestClientException ex) {
       log.error("Failed to call Naver book search API", ex);
       throw new RuntimeException("네이버 도서 검색 API 호출에 실패했습니다.");
@@ -66,29 +60,13 @@ public class NaverBookSearchServiceImpl implements BookSearchService {
 
   private SearchBookResponse.BookItem toBookItem(NaverBookItem item) {
     return new SearchBookResponse.BookItem(
-        item.isbn(),
-        item.title(),
-        item.author(),
-        item.publisher(),
-        item.link()
-    );
+        item.isbn(), item.title(), item.author(), item.publisher(), item.link());
   }
 
   @JsonIgnoreProperties(ignoreUnknown = true)
-  private record NaverBookSearchResponse(
-      int total,
-      int display,
-      List<NaverBookItem> items
-  ) {
-  }
+  private record NaverBookSearchResponse(int total, int display, List<NaverBookItem> items) {}
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   private record NaverBookItem(
-      String isbn,
-      String title,
-      String author,
-      String publisher,
-      String link
-  ) {
-  }
+      String isbn, String title, String author, String publisher, String link) {}
 }
