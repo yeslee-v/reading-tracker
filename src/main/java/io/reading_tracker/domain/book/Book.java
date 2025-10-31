@@ -28,8 +28,8 @@ public class Book extends BaseEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(name = "name", nullable = false, length = 200)
-  private String name;
+  @Column(name = "title", nullable = false, length = 200)
+  private String title;
 
   @Column(nullable = false, length = 100)
   private String author;
@@ -40,11 +40,15 @@ public class Book extends BaseEntity {
   @Column(length = 20)
   private String isbn;
 
-  @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-  private Set<UserBook> userBooks = new LinkedHashSet<>();
+  @OneToMany(
+      mappedBy = "book",
+      cascade = CascadeType.ALL,
+      orphanRemoval = true,
+      fetch = FetchType.LAZY)
+  private final Set<UserBook> userBooks = new LinkedHashSet<>();
 
-  public Book(String name, String author, String publisher, String isbn) {
-    this.name = name;
+  public Book(String title, String author, String publisher, String isbn) {
+    this.title = title;
     this.author = author;
     this.publisher = publisher;
     this.isbn = isbn;
