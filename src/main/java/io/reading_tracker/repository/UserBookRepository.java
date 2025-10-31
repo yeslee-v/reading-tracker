@@ -2,6 +2,7 @@ package io.reading_tracker.repository;
 
 import io.reading_tracker.domain.book.State;
 import io.reading_tracker.domain.userbook.UserBook;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -15,4 +16,10 @@ public interface UserBookRepository extends JpaRepository<UserBook, Long> {
   Page<UserBook> findByUserIdAndState(Long userId, State state, Pageable pageable);
 
   int countByUserIdAndState(Long userId, State state);
+
+  Optional<UserBook> findByUserIdAndBookId(Long userId, Long bookId);
+
+  void updateCurrentPageByUserId(Long userId, Integer currentPage);
+
+  void updateBookStateByUserId(Long userId, State state);
 }

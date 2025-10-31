@@ -5,14 +5,18 @@ import io.reading_tracker.domain.book.Book;
 import io.reading_tracker.domain.book.State;
 import io.reading_tracker.domain.user.User;
 import io.reading_tracker.domain.userbook.UserBook;
+import io.reading_tracker.repository.BookRepository;
 import io.reading_tracker.repository.UserBookRepository;
 import io.reading_tracker.request.SaveBookRequest;
+import io.reading_tracker.request.UpdateBookRequest;
 import io.reading_tracker.response.GetBookListResponse;
 import io.reading_tracker.response.SaveBookResponse;
+import io.reading_tracker.response.UpdateBookResponse;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.TypedQuery;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +35,7 @@ public class BookServiceImpl implements BookService {
   private static final Sort UPDATED_AT_DESC = Sort.by(Sort.Direction.DESC, "updatedAt");
   private static final int DEFAULT_PAGE_SIZE = 10;
 
+  private final BookRepository bookRepository;
   private final UserBookRepository userBookRepository;
 
   @PersistenceContext private EntityManager entityManager;
@@ -71,7 +76,7 @@ public class BookServiceImpl implements BookService {
 
     return new GetBookListResponse.BookItem(
         userBook.getId(),
-        userBook.getBook().getName(),
+        userBook.getBook().getTitle(),
         userBook.getBook().getAuthor(),
         userBook.getBook().getPublisher(),
         currentPage,
@@ -80,26 +85,14 @@ public class BookServiceImpl implements BookService {
         userBook.getState());
   }
 
-  private int calculateProgress(Integer currentPage, Integer totalPages) {
-    if (totalPages == null || totalPages == 0) {
-      return 0;
-    }
-
-    double progress = (double) currentPage / totalPages * 100.0;
-    return (int) Math.floor(progress);
-  }
-
-  private int toCount(long count) {
-    return Math.toIntExact(count);
-  }
-
   @Override
   @Transactional
   public SaveBookResponse saveBook(SaveBookRequest request) {
-    String title = normalize(request.title());
-    String author = normalize(request.author());
-    String publisher = normalize(request.publisher());
-    String isbn = normalize(request.isbn());
+    Long id = request.id();
+    String title = request.title();
+    String author = request.author();
+    String publisher = request.publisher();
+    String isbn = request.isbn();
     Integer totalPages = request.totalPages();
 
     if (title == null) {
@@ -119,24 +112,65 @@ public class BookServiceImpl implements BookService {
     }
 
     User user = getCurrentUser();
+    Optional<UserBook> isBookRegistered =
+        userBookRepository.findByUserIdAndBookId(user.getId(), id);
 
-    if (isBookAlreadyRegistered(user.getId(), isbn)) {
+    if (isBookRegistered.isPresent()) {
       throw new IllegalStateException("이미 추가된 책입니다.");
     }
 
-    Book book = findOrCreateBook(isbn, title, author, publisher);
+    Book book = findOrCreateBook(id, isbn, title, author, publisher);
 
     UserBook userBook = new UserBook(user, book, State.PLANNED, totalPages, 1);
     UserBook savedUserBook = userBookRepository.save(userBook);
 
     return new SaveBookResponse(
         savedUserBook.getId(),
-        savedUserBook.getBook().getName(),
+        savedUserBook.getBook().getTitle(),
         savedUserBook.getBook().getAuthor(),
         savedUserBook.getBook().getPublisher(),
         savedUserBook.getState(),
         savedUserBook.getCurrentPage(),
         savedUserBook.getTotalPages());
+  }
+
+  @Override
+  @Transactional
+  public UpdateBookResponse updateBook(UpdateBookRequest request) {
+    Long id = request.id();
+    Integer currentPage = request.currentPage();
+    String state = request.state();
+
+    User user = getCurrentUser();
+    Long userId = user.getId();
+    Optional<UserBook> userBook = userBookRepository.findByUserIdAndBookId(userId, id);
+
+    if (userBook.isEmpty()) {
+      throw new IllegalStateException("추가되지 않은 도서입니다.");
+    }
+
+    if (currentPage != null) {
+      userBookRepository.updateCurrentPageByUserId(userId, currentPage);
+    }
+
+    if (Objects.equals(currentPage, userBook.get().getTotalPages()) || !state.isBlank()) {
+      userBookRepository.updateBookStateByUserId(userId, State.from(state));
+    }
+
+    return new UpdateBookResponse(
+        userBook.get().getBook().getId(),
+        calculateProgress(userBook.get().getCurrentPage(), userBook.get().getTotalPages()),
+        userBook.get().getCurrentPage(),
+        userBook.get().getState());
+  }
+
+  private int calculateProgress(Integer currentPage, Integer totalPages) {
+    double progress = (double) currentPage / totalPages * 100.0;
+    return (int) Math.floor(progress);
+  }
+
+  private int toCount(long count) {
+    return Math.toIntExact(count);
   }
 
   private User getCurrentUser() {
@@ -156,43 +190,18 @@ public class BookServiceImpl implements BookService {
     return user;
   }
 
-  private Book findOrCreateBook(String isbn, String title, String author, String publisher) {
-    TypedQuery<Book> query =
-        entityManager
-            .createQuery("SELECT b FROM Book b WHERE b.isbn = :isbn", Book.class)
-            .setParameter("isbn", isbn)
-            .setMaxResults(1);
+  private Book findOrCreateBook(
+      Long id, String isbn, String title, String author, String publisher) {
+    Optional<Book> book = bookRepository.findById(id);
 
-    List<Book> books = query.getResultList();
-
-    if (!books.isEmpty()) {
-      return books.get(0);
+    if (book.isPresent()) {
+      return book.get();
     }
 
     Book newBook = new Book(title, author, publisher, isbn);
-    entityManager.persist(newBook);
+
+    bookRepository.save(newBook);
+
     return newBook;
-  }
-
-  private boolean isBookAlreadyRegistered(Long userId, String isbn) {
-    Long count =
-        entityManager
-            .createQuery(
-                "SELECT COUNT(ub) FROM UserBook ub WHERE ub.user.id = :userId AND ub.book.isbn = :isbn",
-                Long.class)
-            .setParameter("userId", userId)
-            .setParameter("isbn", isbn)
-            .getSingleResult();
-
-    return count != null && count > 0;
-  }
-
-  private String normalize(String value) {
-    if (value == null) {
-      return null;
-    }
-
-    String trimmed = value.trim();
-    return trimmed.isEmpty() ? null : trimmed;
   }
 }

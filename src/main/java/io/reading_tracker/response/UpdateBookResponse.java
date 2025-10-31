@@ -1,3 +1,5 @@
 package io.reading_tracker.response;
 
-public record UpdateBookResponse(Long id, Integer currentPage, String state) {}
+import io.reading_tracker.domain.book.State;
+
+public record UpdateBookResponse(Long id, Integer progress, Integer currentPage, State state) {}
