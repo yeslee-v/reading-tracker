@@ -15,7 +15,6 @@ import io.reading_tracker.response.UpdateBookResponse;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,7 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional(readOnly = true)
+@Transactional
 @RequiredArgsConstructor
 public class BookServiceImpl implements BookService {
 
@@ -137,31 +136,29 @@ public class BookServiceImpl implements BookService {
   @Override
   @Transactional
   public UpdateBookResponse updateBook(UpdateBookRequest request) {
-    Long id = request.id();
+    Long userBookId = request.id();
+
+    if (userBookId == null) {
+      throw new IllegalArgumentException("도서 ID가 필요합니다.");
+    }
+
+    UserBook userBook =
+        userBookRepository
+            .findById(userBookId)
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 도서입니다."));
+
     Integer currentPage = request.currentPage();
     String state = request.state();
 
-    User user = getCurrentUser();
-    Long userId = user.getId();
-    Optional<UserBook> userBook = userBookRepository.findByUserIdAndBookId(userId, id);
+    State targetState = state == null ? userBook.getState() : State.from(state);
 
-    if (userBook.isEmpty()) {
-      throw new IllegalStateException("추가되지 않은 도서입니다.");
-    }
-
-    if (currentPage != null) {
-      userBookRepository.updateCurrentPageByUserId(userId, currentPage);
-    }
-
-    if (Objects.equals(currentPage, userBook.get().getTotalPages()) || !state.isBlank()) {
-      userBookRepository.updateBookStateByUserId(userId, State.from(state));
-    }
+    userBook.updateProgress(targetState, userBook.getTotalPages(), currentPage);
 
     return new UpdateBookResponse(
-        userBook.get().getBook().getId(),
-        calculateProgress(userBook.get().getCurrentPage(), userBook.get().getTotalPages()),
-        userBook.get().getCurrentPage(),
-        userBook.get().getState());
+        userBook.getId(),
+        calculateProgress(userBook.getCurrentPage(), userBook.getTotalPages()),
+        userBook.getCurrentPage(),
+        userBook.getState());
   }
 
   private int calculateProgress(Integer currentPage, Integer totalPages) {

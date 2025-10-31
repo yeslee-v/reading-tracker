@@ -18,8 +18,4 @@ public interface UserBookRepository extends JpaRepository<UserBook, Long> {
   int countByUserIdAndState(Long userId, State state);
 
   Optional<UserBook> findByUserIdAndBookId(Long userId, Long bookId);
-
-  void updateCurrentPageByUserId(Long userId, Integer currentPage);
-
-  void updateBookStateByUserId(Long userId, State state);
 }
