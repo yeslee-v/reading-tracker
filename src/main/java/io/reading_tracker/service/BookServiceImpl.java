@@ -17,9 +17,6 @@ import jakarta.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,8 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class BookServiceImpl implements BookService {
 
-  private static final Sort UPDATED_AT_DESC = Sort.by(Sort.Direction.DESC, "updatedAt");
-  private static final int DEFAULT_PAGE_SIZE = 10;
+  private static final Sort CREATED_AT_DESC = Sort.by(Sort.Direction.DESC, "createdAt");
 
   private final BookRepository bookRepository;
   private final UserBookRepository userBookRepository;
@@ -41,13 +37,11 @@ public class BookServiceImpl implements BookService {
 
   @Override
   public GetBookListResponse getBookList(Long userId, State stateFilter, int page) {
-    Pageable pageable = PageRequest.of(page, DEFAULT_PAGE_SIZE, UPDATED_AT_DESC);
-
-    Page<UserBook> userBooks =
-        userBookRepository.findByUserIdAndState(userId, stateFilter, pageable);
+    List<UserBook> userBooks =
+        userBookRepository.findByUserIdAndState(userId, stateFilter, CREATED_AT_DESC);
 
     List<GetBookListResponse.BookItem> bookItems =
-        userBooks.getContent().stream().map(this::toBookItem).toList();
+        userBooks.stream().map(this::toBookItem).toList();
 
     GetBookListResponse.Summary summary =
         new GetBookListResponse.Summary(
@@ -56,17 +50,9 @@ public class BookServiceImpl implements BookService {
             toCount(userBookRepository.countByUserIdAndState(userId, State.COMPLETED)),
             toCount(userBookRepository.countByUserIdAndState(userId, State.ARCHIVED)));
 
-    GetBookListResponse.Pagination pagination =
-        new GetBookListResponse.Pagination(
-            userBooks.getNumber() + 1,
-            userBooks.getTotalPages(),
-            userBooks.getTotalElements(),
-            userBooks.hasPrevious(),
-            userBooks.hasNext());
-
     // 캐싱
 
-    return new GetBookListResponse(summary, bookItems, pagination);
+    return new GetBookListResponse(summary, bookItems);
   }
 
   private GetBookListResponse.BookItem toBookItem(UserBook userBook) {
