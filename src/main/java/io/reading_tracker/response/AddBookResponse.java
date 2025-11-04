@@ -2,7 +2,7 @@ package io.reading_tracker.response;
 
 import io.reading_tracker.domain.book.State;
 
-public record SaveBookResponse(
+public record AddBookResponse(
     Long id,
     String title,
     String author,

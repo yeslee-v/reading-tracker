@@ -1,16 +1,15 @@
 package io.reading_tracker.service;
 
-import io.reading_tracker.auth.PrincipalDetails;
 import io.reading_tracker.domain.book.Book;
 import io.reading_tracker.domain.book.State;
 import io.reading_tracker.domain.user.User;
 import io.reading_tracker.domain.userbook.UserBook;
 import io.reading_tracker.repository.BookRepository;
 import io.reading_tracker.repository.UserBookRepository;
-import io.reading_tracker.request.SaveBookRequest;
+import io.reading_tracker.request.AddBookRequest;
 import io.reading_tracker.request.UpdateBookRequest;
+import io.reading_tracker.response.AddBookResponse;
 import io.reading_tracker.response.GetBookListResponse;
-import io.reading_tracker.response.SaveBookResponse;
 import io.reading_tracker.response.UpdateBookResponse;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -18,8 +17,6 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -71,8 +68,7 @@ public class BookServiceImpl implements BookService {
 
   @Override
   @Transactional
-  public SaveBookResponse saveBook(SaveBookRequest request) {
-    Long id = request.id();
+  public AddBookResponse addBookToUserLibrary(User user, AddBookRequest request) {
     String title = request.title();
     String author = request.author();
     String publisher = request.publisher();
@@ -95,20 +91,28 @@ public class BookServiceImpl implements BookService {
       throw new IllegalArgumentException("전체 페이지 수는 1 이상이어야 합니다.");
     }
 
-    User user = getCurrentUser();
+    Book book =
+        bookRepository
+            .findBookByIsbn(isbn)
+            .orElseGet(
+                () -> {
+                  Book newBook = new Book(title, author, publisher, isbn);
+                  bookRepository.save(newBook);
+
+                  return newBook;
+                });
+
     Optional<UserBook> isBookRegistered =
-        userBookRepository.findByUserIdAndBookId(user.getId(), id);
+        userBookRepository.findByUserIdAndBookId(user.getId(), book.getId());
 
     if (isBookRegistered.isPresent()) {
-      throw new IllegalStateException("이미 추가된 책입니다.");
+      throw new IllegalStateException("이미 사용자의 도서 목록에 추가되어 있습니다.");
     }
 
-    Book book = findOrCreateBook(id, isbn, title, author, publisher);
+    UserBook newUserBook = new UserBook(user, book, State.IN_PROGRESS, totalPages, 1);
+    UserBook savedUserBook = userBookRepository.save(newUserBook);
 
-    UserBook userBook = new UserBook(user, book, State.IN_PROGRESS, totalPages, 1);
-    UserBook savedUserBook = userBookRepository.save(userBook);
-
-    return new SaveBookResponse(
+    return new AddBookResponse(
         savedUserBook.getId(),
         savedUserBook.getBook().getTitle(),
         savedUserBook.getBook().getAuthor(),
@@ -153,37 +157,5 @@ public class BookServiceImpl implements BookService {
 
   private int toCount(long count) {
     return Math.toIntExact(count);
-  }
-
-  private User getCurrentUser() {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-    if (authentication == null
-        || !(authentication.getPrincipal() instanceof PrincipalDetails principal)) {
-      throw new IllegalStateException("인증된 사용자가 존재하지 않습니다.");
-    }
-
-    User user = entityManager.find(User.class, principal.getUserId());
-
-    if (user == null) {
-      throw new IllegalStateException("사용자를 찾을 수 없습니다.");
-    }
-
-    return user;
-  }
-
-  private Book findOrCreateBook(
-      Long id, String isbn, String title, String author, String publisher) {
-    Optional<Book> book = bookRepository.findById(id);
-
-    if (book.isPresent()) {
-      return book.get();
-    }
-
-    Book newBook = new Book(title, author, publisher, isbn);
-
-    bookRepository.save(newBook);
-
-    return newBook;
   }
 }

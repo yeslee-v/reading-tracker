@@ -2,11 +2,11 @@ package io.reading_tracker.controller;
 
 import io.reading_tracker.auth.PrincipalDetails;
 import io.reading_tracker.domain.book.State;
-import io.reading_tracker.request.SaveBookRequest;
+import io.reading_tracker.request.AddBookRequest;
 import io.reading_tracker.request.UpdateBookRequest;
+import io.reading_tracker.response.AddBookResponse;
 import io.reading_tracker.response.ApiResponse;
 import io.reading_tracker.response.GetBookListResponse;
-import io.reading_tracker.response.SaveBookResponse;
 import io.reading_tracker.response.SearchBookResponse;
 import io.reading_tracker.response.UpdateBookResponse;
 import io.reading_tracker.service.BookSearchService;
@@ -76,9 +76,9 @@ public class BookController {
   }
 
   @PostMapping
-  public ApiResponse<SaveBookResponse> saveBook(
+  public ApiResponse<AddBookResponse> addBook(
       @AuthenticationPrincipal PrincipalDetails principalDetails,
-      @RequestBody SaveBookRequest request) {
+      @RequestBody AddBookRequest request) {
     if (principalDetails == null) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다");
     }
@@ -87,7 +87,8 @@ public class BookController {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "추가할 책 정보가 없습니다.");
     }
 
-    SaveBookResponse response = bookService.saveBook(request);
+    AddBookResponse response =
+        bookService.addBookToUserLibrary(principalDetails.getUser(), request);
 
     return ApiResponse.success(response);
   }
