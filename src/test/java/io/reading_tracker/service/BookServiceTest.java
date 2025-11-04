@@ -1,6 +1,7 @@
 package io.reading_tracker.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.reading_tracker.domain.book.Book;
 import io.reading_tracker.domain.book.State;
@@ -9,6 +10,8 @@ import io.reading_tracker.domain.userbook.UserBook;
 import io.reading_tracker.repository.BookRepository;
 import io.reading_tracker.repository.UserBookRepository;
 import io.reading_tracker.repository.UserRepository;
+import io.reading_tracker.request.AddBookRequest;
+import io.reading_tracker.response.AddBookResponse;
 import io.reading_tracker.response.GetBookListResponse;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
@@ -124,16 +127,42 @@ class BookServiceTest {
   @DisplayName("선택한 도서를 추가하면 IN_PROGRESS 상태인 새 도서 정보를 반환한다")
   void addBook_returnsNewBookInformation() {
     // given 선택한 도서를
+    User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
+
+    AddBookRequest request =
+        new AddBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
+
     // when 추가하면
+    AddBookResponse response = bookService.addBookToUserLibrary(user, request);
+
     // then IN_PROGRESS 상태인 새 도서 정보를 반환한다
+    assertThat(response).isNotNull();
+    assertThat(response.state()).isEqualTo(State.IN_PROGRESS);
+    assertThat(response.title()).isEqualTo("테스트 도서");
+
+    UserBook savedBook = userBookRepository.findById(response.id()).orElseThrow();
+    assertThat(savedBook.getUser().getId()).isEqualTo(user.getId());
+    assertThat(savedBook.getBook().getTitle()).isEqualTo("테스트 도서");
   }
 
   @Test
   @DisplayName("이미 추가된 도서는 내 도서 목록에 재추가할 수 없다")
   void addAlreadyExistBook_throwsError() {
     // given 이미 도서 목록(UserBookByUserId)에 있는 책을
+    User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
+
+    AddBookRequest request1 =
+        new AddBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
+
+    AddBookResponse response1 = bookService.addBookToUserLibrary(user, request1);
+
     // when 재추가하려고 하면
+    AddBookRequest request2 =
+        new AddBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
+
     // then 이미 존재하는 책은 재추가할 수 없다고 에러를 반환한다
+    assertThatThrownBy(() -> bookService.addBookToUserLibrary(user, request2))
+        .isInstanceOf(IllegalStateException.class);
   }
 
   @Test
