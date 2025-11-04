@@ -45,7 +45,6 @@ public class BookServiceImpl implements BookService {
 
     GetBookListResponse.Summary summary =
         new GetBookListResponse.Summary(
-            toCount(userBookRepository.countByUserIdAndState(userId, State.PLANNED)),
             toCount(userBookRepository.countByUserIdAndState(userId, State.IN_PROGRESS)),
             toCount(userBookRepository.countByUserIdAndState(userId, State.COMPLETED)),
             toCount(userBookRepository.countByUserIdAndState(userId, State.ARCHIVED)));
@@ -106,7 +105,7 @@ public class BookServiceImpl implements BookService {
 
     Book book = findOrCreateBook(id, isbn, title, author, publisher);
 
-    UserBook userBook = new UserBook(user, book, State.PLANNED, totalPages, 1);
+    UserBook userBook = new UserBook(user, book, State.IN_PROGRESS, totalPages, 1);
     UserBook savedUserBook = userBookRepository.save(userBook);
 
     return new SaveBookResponse(

@@ -89,11 +89,11 @@ class BookServiceTest {
     Book third = bookRepository.save(new Book("책 C", "저자 C", "출판사 C", "isbn-3"));
 
     UserBook firstReading =
-        userBookRepository.save(new UserBook(user, first, State.PLANNED, 300, 120));
+        userBookRepository.save(new UserBook(user, first, State.COMPLETED, 300, 120));
     UserBook secondReading =
         userBookRepository.save(new UserBook(user, second, State.COMPLETED, 320, 160));
     UserBook latestReading =
-        userBookRepository.save(new UserBook(user, third, State.COMPLETED, 280, 280));
+        userBookRepository.save(new UserBook(user, third, State.ARCHIVED, 280, 280));
 
     LocalDateTime base = LocalDateTime.now();
     ReflectionTestUtils.setField(firstReading, "createdAt", base.minusMinutes(10));

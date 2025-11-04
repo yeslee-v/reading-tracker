@@ -48,7 +48,7 @@ public class UserBook extends BaseEntity {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 20)
-  private State state = State.PLANNED;
+  private State state = State.IN_PROGRESS;
 
   @Column(name = "total_pages", nullable = false)
   private Integer totalPages;
@@ -65,9 +65,9 @@ public class UserBook extends BaseEntity {
 
     validateProgress(this.totalPages, this.currentPage);
 
-    this.state = State.PLANNED;
+    this.state = State.IN_PROGRESS;
 
-    updateStateAfterProgress(state, this.currentPage, false);
+    updateStateAfterProgress(state, this.currentPage);
   }
 
   public void updateProgress(State state, Integer totalPages, Integer currentPage) {
@@ -75,11 +75,9 @@ public class UserBook extends BaseEntity {
 
     validateProgress(totalPages, newCurrentPage);
 
-    boolean currentPageChanged = !newCurrentPage.equals(this.currentPage);
-
     this.currentPage = newCurrentPage;
 
-    updateStateAfterProgress(state, newCurrentPage, currentPageChanged);
+    updateStateAfterProgress(state, newCurrentPage);
   }
 
   private void validateProgress(Integer totalPages, Integer currentPage) {
@@ -96,8 +94,7 @@ public class UserBook extends BaseEntity {
     }
   }
 
-  private void updateStateAfterProgress(
-      State requestedState, Integer currentPage, boolean currentPageChanged) {
+  private void updateStateAfterProgress(State requestedState, Integer currentPage) {
 
     if (requestedState != null) {
       this.state = requestedState;
@@ -106,11 +103,6 @@ public class UserBook extends BaseEntity {
 
     if (currentPage.equals(totalPages)) {
       this.state = State.COMPLETED;
-      return;
-    }
-
-    if (currentPageChanged || (this.state == State.PLANNED && 1 < currentPage)) {
-      this.state = State.IN_PROGRESS;
     }
   }
 }

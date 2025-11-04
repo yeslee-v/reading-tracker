@@ -5,7 +5,7 @@ import java.util.List;
 
 public record GetBookListResponse(Summary summary, List<BookItem> books) {
 
-  public record Summary(int planned, int inProgress, int completed, int archived) {}
+  public record Summary(int inProgress, int completed, int archived) {}
 
   public record BookItem(
       Long id,
