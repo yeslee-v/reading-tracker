@@ -149,22 +149,18 @@ class BookServiceTest {
   }
 
   @Test
-  @DisplayName("이미 추가된 도서는 내 도서 목록에 재추가할 수 없다")
+  @DisplayName("이미 추가된 도서는 사용자의 도서 목록에 재추가할 수 없다")
   void addAlreadyExistBook_throwsError() {
     // given 이미 도서 목록(UserBookByUserId)에 있는 책을
-    User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
-
-    AddUserBookRequest request1 =
+    AddUserBookRequest request =
         new AddUserBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
 
-    AddUserBookResponse response1 = bookService.addBookToUserLibrary(user, request1);
+    UserBook userBook = givenInitialUserBook(request);
+    User user = userBook.getUser();
 
     // when 재추가하려고 하면
-    AddUserBookRequest request2 =
-        new AddUserBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
-
     // then 이미 존재하는 책은 재추가할 수 없다고 에러를 반환한다
-    assertThatThrownBy(() -> bookService.addBookToUserLibrary(user, request2))
+    assertThatThrownBy(() -> bookService.addBookToUserLibrary(user, request))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("이미 사용자의 도서 목록에 추가되어 있습니다.");
   }
@@ -173,16 +169,12 @@ class BookServiceTest {
   @DisplayName("읽은 페이지를 업데이트하면 독서 진행률이 수정된다")
   void updateBook_withCurrentPage_returnsRateCalculated() {
     // given 읽은 페이지를
-    User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
+    UserBook userBook = givenInitialUserBook();
+    User user = userBook.getUser();
 
-    AddUserBookRequest request =
-        new AddUserBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
-
-    AddUserBookResponse response = bookService.addBookToUserLibrary(user, request);
-
-    Long userBookId = response.id();
-    State state = response.state();
-    Integer totalPages = response.totalPages();
+    Long userBookId = userBook.getId();
+    State state = userBook.getState();
+    Integer totalPages = userBook.getTotalPages();
 
     // when 업데이트하면
     Integer targetCurrentPage = 100;
@@ -204,15 +196,11 @@ class BookServiceTest {
   @DisplayName("읽은 페이지가 전체 페이지 값보다 크다면 에러를 반환한다")
   void updateBook_withCurrentPageGreaterThanTotalPages_throwsError() {
     // given 전체 페이지보다 값이 큰 읽은 페이지 값을
-    User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
+    UserBook userBook = givenInitialUserBook();
+    User user = userBook.getUser();
 
-    AddUserBookRequest request =
-        new AddUserBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
-
-    AddUserBookResponse response = bookService.addBookToUserLibrary(user, request);
-
-    Long userBookId = response.id();
-    State state = response.state();
+    Long userBookId = userBook.getId();
+    State state = userBook.getState();
 
     // when 업데이트하면
     Integer targetCurrentPage = 301;
@@ -229,15 +217,11 @@ class BookServiceTest {
   @DisplayName("읽은 페이지가 음수이면 에러를 반환한다")
   void updateBook_withNegativeCurrentPage_throwsError() {
     // given 음수인 읽은 페이지 값을
-    User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
+    UserBook userBook = givenInitialUserBook();
+    User user = userBook.getUser();
 
-    AddUserBookRequest request =
-        new AddUserBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
-
-    AddUserBookResponse response = bookService.addBookToUserLibrary(user, request);
-
-    Long userBookId = response.id();
-    State state = response.state();
+    Long userBookId = userBook.getId();
+    State state = userBook.getState();
 
     // when 업데이트하면
     Integer targetCurrentPage = -1;
@@ -254,14 +238,10 @@ class BookServiceTest {
   @DisplayName("상태를 직접 수정하면 읽은 페이지, 진행률 값과 관련없이 독서 상태만 수정한다")
   void updateBook_withState_returnsStateUpdated() {
     // given 변경하려고 하는 상태 값이
-    User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
+    UserBook userBook = givenInitialUserBook();
+    User user = userBook.getUser();
 
-    AddUserBookRequest request =
-        new AddUserBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
-
-    AddUserBookResponse response = bookService.addBookToUserLibrary(user, request);
-
-    Long userBookId = response.id();
+    Long userBookId = userBook.getId();
 
     // when 직접 주어지면
     String targetState = "ARCHIVED";
@@ -279,14 +259,10 @@ class BookServiceTest {
   @DisplayName("읽은 페이지 값이 전체 페이지 값과 같다면 상태는 COMPLETE로 바뀐다")
   void updateBook_withCurrentPageSameAsTotalPages_returnsStateCompleteUpdated() {
     // given 읽은 페이지 값이
-    User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
+    UserBook userBook = givenInitialUserBook();
+    User user = userBook.getUser();
 
-    AddUserBookRequest request =
-        new AddUserBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
-
-    AddUserBookResponse response = bookService.addBookToUserLibrary(user, request);
-
-    Long userBookId = response.id();
+    Long userBookId = userBook.getId();
 
     // when 전체 페이지 값과 같다면
     Integer targetCurrentPage = 300;
@@ -305,15 +281,11 @@ class BookServiceTest {
   @DisplayName("COMPLETE 상태에서 읽은 페이지 값을 수정하면 상태는 IN_PROGRESS로 바뀐다")
   void updateBook_withCurrentPageModifiedNotSameAsTotalPages_returnsStateInProgressUpdated() {
     // given COMPLETE 상태에서 읽은 페이지 값
-    User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
+    UserBook userBook = givenInitialUserBook();
+    User user = userBook.getUser();
 
-    AddUserBookRequest request =
-        new AddUserBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
-
-    AddUserBookResponse response = bookService.addBookToUserLibrary(user, request);
-
-    Long userBookId = response.id();
-    Integer totalPages = response.totalPages();
+    Long userBookId = userBook.getId();
+    Integer totalPages = userBook.getTotalPages();
 
     Integer targetCurrentPage1 = 300;
     UpdateUserBookRequest updatedRequest1 =
@@ -340,5 +312,24 @@ class BookServiceTest {
         (int) Math.floor(updatedResponse2.currentPage() / (double) totalPages * 100);
 
     Assertions.assertThat(updatedResponse2.progress()).isEqualTo(expectedRate);
+  }
+
+  private UserBook givenInitialUserBook() {
+    User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
+
+    AddUserBookRequest request =
+        new AddUserBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
+
+    AddUserBookResponse response = bookService.addBookToUserLibrary(user, request);
+
+    return userBookRepository.findById(response.id()).orElseThrow();
+  }
+
+  private UserBook givenInitialUserBook(AddUserBookRequest request) {
+    User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
+
+    AddUserBookResponse response = bookService.addBookToUserLibrary(user, request);
+
+    return userBookRepository.findById(response.id()).orElseThrow();
   }
 }
