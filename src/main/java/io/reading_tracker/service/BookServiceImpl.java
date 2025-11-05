@@ -6,9 +6,9 @@ import io.reading_tracker.domain.user.User;
 import io.reading_tracker.domain.userbook.UserBook;
 import io.reading_tracker.repository.BookRepository;
 import io.reading_tracker.repository.UserBookRepository;
-import io.reading_tracker.request.AddBookRequest;
+import io.reading_tracker.request.AddUserBookRequest;
 import io.reading_tracker.request.UpdateUserBookRequest;
-import io.reading_tracker.response.AddBookResponse;
+import io.reading_tracker.response.AddUserBookResponse;
 import io.reading_tracker.response.GetBookListResponse;
 import io.reading_tracker.response.UpdateUserBookResponse;
 import jakarta.persistence.EntityManager;
@@ -68,7 +68,7 @@ public class BookServiceImpl implements BookService {
 
   @Override
   @Transactional
-  public AddBookResponse addBookToUserLibrary(User user, AddBookRequest request) {
+  public AddUserBookResponse addBookToUserLibrary(User user, AddUserBookRequest request) {
     String title = request.title();
     String author = request.author();
     String publisher = request.publisher();
@@ -112,7 +112,7 @@ public class BookServiceImpl implements BookService {
     UserBook newUserBook = new UserBook(user, book, State.IN_PROGRESS, totalPages, 1);
     UserBook savedUserBook = userBookRepository.save(newUserBook);
 
-    return new AddBookResponse(
+    return new AddUserBookResponse(
         savedUserBook.getId(),
         savedUserBook.getBook().getTitle(),
         savedUserBook.getBook().getAuthor(),

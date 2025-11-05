@@ -10,9 +10,9 @@ import io.reading_tracker.domain.userbook.UserBook;
 import io.reading_tracker.repository.BookRepository;
 import io.reading_tracker.repository.UserBookRepository;
 import io.reading_tracker.repository.UserRepository;
-import io.reading_tracker.request.AddBookRequest;
+import io.reading_tracker.request.AddUserBookRequest;
 import io.reading_tracker.request.UpdateUserBookRequest;
-import io.reading_tracker.response.AddBookResponse;
+import io.reading_tracker.response.AddUserBookResponse;
 import io.reading_tracker.response.GetBookListResponse;
 import io.reading_tracker.response.UpdateUserBookResponse;
 import jakarta.persistence.EntityManager;
@@ -132,11 +132,11 @@ class BookServiceTest {
     // given 선택한 도서를
     User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
 
-    AddBookRequest request =
-        new AddBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
+    AddUserBookRequest request =
+        new AddUserBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
 
     // when 추가하면
-    AddBookResponse response = bookService.addBookToUserLibrary(user, request);
+    AddUserBookResponse response = bookService.addBookToUserLibrary(user, request);
 
     // then IN_PROGRESS 상태인 새 도서 정보를 반환한다
     assertThat(response).isNotNull();
@@ -154,14 +154,14 @@ class BookServiceTest {
     // given 이미 도서 목록(UserBookByUserId)에 있는 책을
     User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
 
-    AddBookRequest request1 =
-        new AddBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
+    AddUserBookRequest request1 =
+        new AddUserBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
 
-    AddBookResponse response1 = bookService.addBookToUserLibrary(user, request1);
+    AddUserBookResponse response1 = bookService.addBookToUserLibrary(user, request1);
 
     // when 재추가하려고 하면
-    AddBookRequest request2 =
-        new AddBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
+    AddUserBookRequest request2 =
+        new AddUserBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
 
     // then 이미 존재하는 책은 재추가할 수 없다고 에러를 반환한다
     assertThatThrownBy(() -> bookService.addBookToUserLibrary(user, request2))
@@ -175,10 +175,10 @@ class BookServiceTest {
     // given 읽은 페이지를
     User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
 
-    AddBookRequest request =
-        new AddBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
+    AddUserBookRequest request =
+        new AddUserBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
 
-    AddBookResponse response = bookService.addBookToUserLibrary(user, request);
+    AddUserBookResponse response = bookService.addBookToUserLibrary(user, request);
 
     Long userBookId = response.id();
     State state = response.state();
@@ -206,10 +206,10 @@ class BookServiceTest {
     // given 전체 페이지보다 값이 큰 읽은 페이지 값을
     User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
 
-    AddBookRequest request =
-        new AddBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
+    AddUserBookRequest request =
+        new AddUserBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
 
-    AddBookResponse response = bookService.addBookToUserLibrary(user, request);
+    AddUserBookResponse response = bookService.addBookToUserLibrary(user, request);
 
     Long userBookId = response.id();
     State state = response.state();
@@ -231,10 +231,10 @@ class BookServiceTest {
     // given 음수인 읽은 페이지 값을
     User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
 
-    AddBookRequest request =
-        new AddBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
+    AddUserBookRequest request =
+        new AddUserBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
 
-    AddBookResponse response = bookService.addBookToUserLibrary(user, request);
+    AddUserBookResponse response = bookService.addBookToUserLibrary(user, request);
 
     Long userBookId = response.id();
     State state = response.state();
@@ -256,10 +256,10 @@ class BookServiceTest {
     // given 변경하려고 하는 상태 값이
     User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
 
-    AddBookRequest request =
-        new AddBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
+    AddUserBookRequest request =
+        new AddUserBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
 
-    AddBookResponse response = bookService.addBookToUserLibrary(user, request);
+    AddUserBookResponse response = bookService.addBookToUserLibrary(user, request);
 
     Long userBookId = response.id();
 
@@ -281,10 +281,10 @@ class BookServiceTest {
     // given 읽은 페이지 값이
     User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
 
-    AddBookRequest request =
-        new AddBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
+    AddUserBookRequest request =
+        new AddUserBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
 
-    AddBookResponse response = bookService.addBookToUserLibrary(user, request);
+    AddUserBookResponse response = bookService.addBookToUserLibrary(user, request);
 
     Long userBookId = response.id();
 
@@ -307,10 +307,10 @@ class BookServiceTest {
     // given COMPLETE 상태에서 읽은 페이지 값
     User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
 
-    AddBookRequest request =
-        new AddBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
+    AddUserBookRequest request =
+        new AddUserBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
 
-    AddBookResponse response = bookService.addBookToUserLibrary(user, request);
+    AddUserBookResponse response = bookService.addBookToUserLibrary(user, request);
 
     Long userBookId = response.id();
     Integer totalPages = response.totalPages();
