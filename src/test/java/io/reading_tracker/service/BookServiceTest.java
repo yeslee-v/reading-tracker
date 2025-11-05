@@ -165,7 +165,8 @@ class BookServiceTest {
 
     // then 이미 존재하는 책은 재추가할 수 없다고 에러를 반환한다
     assertThatThrownBy(() -> bookService.addBookToUserLibrary(user, request2))
-        .isInstanceOf(IllegalStateException.class);
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("이미 사용자의 도서 목록에 추가되어 있습니다.");
   }
 
   @Test
@@ -203,31 +204,141 @@ class BookServiceTest {
   @DisplayName("읽은 페이지가 전체 페이지 값보다 크다면 에러를 반환한다")
   void updateBook_withCurrentPageGreaterThanTotalPages_throwsError() {
     // given 전체 페이지보다 값이 큰 읽은 페이지 값을
+    User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
+
+    AddBookRequest request =
+        new AddBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
+
+    AddBookResponse response = bookService.addBookToUserLibrary(user, request);
+
+    Long userBookId = response.id();
+    State state = response.state();
+
     // when 업데이트하면
+    Integer targetCurrentPage = 301;
+    UpdateUserBookRequest updatedRequest =
+        new UpdateUserBookRequest(userBookId, targetCurrentPage, state.toString());
+
     // then 읽은 페이지는 전체 페이지 값보다 작거나 같아야한다는 에러를 반환한다
+    assertThatThrownBy(() -> bookService.updateUserBookProgress(user, updatedRequest))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("현재 페이지는 전체 페이지를 초과할 수 없습니다.");
   }
 
   @Test
   @DisplayName("읽은 페이지가 음수이면 에러를 반환한다")
   void updateBook_withNegativeCurrentPage_throwsError() {
     // given 음수인 읽은 페이지 값을
+    User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
+
+    AddBookRequest request =
+        new AddBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
+
+    AddBookResponse response = bookService.addBookToUserLibrary(user, request);
+
+    Long userBookId = response.id();
+    State state = response.state();
+
     // when 업데이트하면
-    // then 읽은 페이지는 전체 페이지 값보다 작거나 같아야한다는 에러를 반환한다
+    Integer targetCurrentPage = -1;
+    UpdateUserBookRequest updatedRequest =
+        new UpdateUserBookRequest(userBookId, targetCurrentPage, state.toString());
+
+    // then 읽은 페이지는 1 이상이어야 한다는 에러를 반환한다
+    assertThatThrownBy(() -> bookService.updateUserBookProgress(user, updatedRequest))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("현재 페이지는 1 이상이어야 합니다.");
+  }
+
+  @Test
+  @DisplayName("상태를 직접 수정하면 읽은 페이지, 진행률 값과 관련없이 독서 상태만 수정한다")
+  void updateBook_withState_returnsStateUpdated() {
+    // given 변경하려고 하는 상태 값이
+    User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
+
+    AddBookRequest request =
+        new AddBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
+
+    AddBookResponse response = bookService.addBookToUserLibrary(user, request);
+
+    Long userBookId = response.id();
+
+    // when 직접 주어지면
+    String targetState = "ARCHIVED";
+    UpdateUserBookRequest updatedRequest = new UpdateUserBookRequest(userBookId, null, targetState);
+
+    UpdateUserBookResponse updatedResponse =
+        bookService.updateUserBookProgress(user, updatedRequest);
+
+    // then 상태가 바뀐다
+    Assertions.assertThat(updatedResponse.state()).isEqualTo(State.ARCHIVED);
+    Assertions.assertThat(updatedResponse.progress()).isEqualTo(0);
   }
 
   @Test
   @DisplayName("읽은 페이지 값이 전체 페이지 값과 같다면 상태는 COMPLETE로 바뀐다")
   void updateBook_withCurrentPageSameAsTotalPages_returnsStateCompleteUpdated() {
     // given 읽은 페이지 값이
+    User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
+
+    AddBookRequest request =
+        new AddBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
+
+    AddBookResponse response = bookService.addBookToUserLibrary(user, request);
+
+    Long userBookId = response.id();
+
     // when 전체 페이지 값과 같다면
-    // then 상태가 COMPLETED로 자동으로 바뀐다
+    Integer targetCurrentPage = 300;
+    UpdateUserBookRequest updatedRequest =
+        new UpdateUserBookRequest(userBookId, targetCurrentPage, null);
+
+    UpdateUserBookResponse updatedResponse =
+        bookService.updateUserBookProgress(user, updatedRequest);
+
+    // then 상태는 COMPLETED로 자동으로 바뀐다
+    Assertions.assertThat(updatedResponse.state()).isEqualTo(State.COMPLETED);
+    Assertions.assertThat(updatedResponse.progress()).isEqualTo(100);
   }
 
   @Test
   @DisplayName("COMPLETE 상태에서 읽은 페이지 값을 수정하면 상태는 IN_PROGRESS로 바뀐다")
   void updateBook_withCurrentPageModifiedNotSameAsTotalPages_returnsStateInProgressUpdated() {
     // given COMPLETE 상태에서 읽은 페이지 값
-    // when 전체 페이지 값과 다르게 수정하면
+    User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
+
+    AddBookRequest request =
+        new AddBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
+
+    AddBookResponse response = bookService.addBookToUserLibrary(user, request);
+
+    Long userBookId = response.id();
+    Integer totalPages = response.totalPages();
+
+    Integer targetCurrentPage1 = 300;
+    UpdateUserBookRequest updatedRequest1 =
+        new UpdateUserBookRequest(userBookId, targetCurrentPage1, null);
+
+    UpdateUserBookResponse updatedResponse1 =
+        bookService.updateUserBookProgress(user, updatedRequest1);
+
+    Assertions.assertThat(updatedResponse1.state()).isEqualTo(State.COMPLETED);
+    Assertions.assertThat(updatedResponse1.progress()).isEqualTo(100);
+
+    // when 읽은 페이지 값을 전체 페이지 값과 다르게 수정하면
+    Integer targetCurrentPage2 = 200;
+    UpdateUserBookRequest updatedRequest2 =
+        new UpdateUserBookRequest(userBookId, targetCurrentPage2, null);
+
+    UpdateUserBookResponse updatedResponse2 =
+        bookService.updateUserBookProgress(user, updatedRequest2);
+
     // then 상태가 IN_PROGRESS로 바뀐다
+    Assertions.assertThat(updatedResponse2.state()).isEqualTo(State.IN_PROGRESS);
+
+    Integer expectedRate =
+        (int) Math.floor(updatedResponse2.currentPage() / (double) totalPages * 100);
+
+    Assertions.assertThat(updatedResponse2.progress()).isEqualTo(expectedRate);
   }
 }
