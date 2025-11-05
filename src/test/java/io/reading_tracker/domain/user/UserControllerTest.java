@@ -7,12 +7,13 @@ import io.reading_tracker.controller.UserController;
 import io.reading_tracker.exception.UserNotFoundException;
 import io.reading_tracker.repository.UserRepository;
 import io.reading_tracker.request.UpdateNicknameRequest;
-import io.reading_tracker.response.ApiResponse;
 import io.reading_tracker.response.UserResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,13 +31,13 @@ class UserControllerTest {
   void getUserById() {
     User saved = userRepository.save(new User("tester", "tester@example.com", "local", "local-id"));
 
-    ApiResponse<UserResponse> response = userController.getUserById(saved.getId());
+    ResponseEntity<UserResponse> response = userController.getUserById(saved.getId());
 
-    assertThat(response.success()).isTrue();
-    assertThat(response.data()).isNotNull();
-    assertThat(response.data().id()).isEqualTo(saved.getId());
-    assertThat(response.data().nickname()).isEqualTo("tester");
-    assertThat(response.data().email()).isEqualTo("tester@example.com");
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(response).isNotNull();
+    assertThat(response.getBody().id()).isEqualTo(saved.getId());
+    assertThat(response.getBody().nickname()).isEqualTo("tester");
+    assertThat(response.getBody().email()).isEqualTo("tester@example.com");
   }
 
   @Test
@@ -44,11 +45,11 @@ class UserControllerTest {
   void findUserByEmail() {
     userRepository.save(new User("tester", "tester@example.com", "local", "local-id"));
 
-    ApiResponse<UserResponse> response = userController.findUserByEmail("tester@example.com");
+    ResponseEntity<UserResponse> response = userController.findUserByEmail("tester@example.com");
 
-    assertThat(response.success()).isTrue();
-    assertThat(response.data()).isNotNull();
-    assertThat(response.data().nickname()).isEqualTo("tester");
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(response).isNotNull();
+    assertThat(response.getBody().nickname()).isEqualTo("tester");
   }
 
   @Test
@@ -65,11 +66,11 @@ class UserControllerTest {
     User saved = userRepository.save(new User("tester", "tester@example.com", "local", "local-id"));
     UpdateNicknameRequest request = new UpdateNicknameRequest(saved.getId(), "new-nickname");
 
-    ApiResponse<UserResponse> response = userController.updateNickname(saved.getId(), request);
+    ResponseEntity<UserResponse> response = userController.updateNickname(saved.getId(), request);
 
-    assertThat(response.success()).isTrue();
-    assertThat(response.data()).isNotNull();
-    assertThat(response.data().nickname()).isEqualTo("new-nickname");
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(response).isNotNull();
+    assertThat(response.getBody().nickname()).isEqualTo("new-nickname");
   }
 
   @Test
