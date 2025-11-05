@@ -10,7 +10,7 @@ import io.reading_tracker.response.UpdateUserBookResponse;
 
 public interface BookService {
 
-  GetBookListResponse getBookList(Long userId, State stateFilter, int page);
+  GetBookListResponse getBookList(Long userId, State stateFilter);
 
   AddUserBookResponse addBookToUserLibrary(User user, AddUserBookRequest request);
 

@@ -11,8 +11,6 @@ import io.reading_tracker.request.UpdateUserBookRequest;
 import io.reading_tracker.response.AddUserBookResponse;
 import io.reading_tracker.response.GetBookListResponse;
 import io.reading_tracker.response.UpdateUserBookResponse;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -30,10 +28,8 @@ public class BookServiceImpl implements BookService {
   private final BookRepository bookRepository;
   private final UserBookRepository userBookRepository;
 
-  @PersistenceContext private EntityManager entityManager;
-
   @Override
-  public GetBookListResponse getBookList(Long userId, State stateFilter, int page) {
+  public GetBookListResponse getBookList(Long userId, State stateFilter) {
     List<UserBook> userBooks =
         userBookRepository.findByUserIdAndState(userId, stateFilter, CREATED_AT_DESC);
 

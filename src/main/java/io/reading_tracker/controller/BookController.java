@@ -29,28 +29,21 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class BookController {
 
-  private static final int DEFAULT_PAGE = 1;
-
   private final BookService bookService;
   private final BookSearchService bookSearchService;
 
   @GetMapping
   public ApiResponse<GetBookListResponse> listBooks(
       @AuthenticationPrincipal PrincipalDetails principalDetails,
-      @RequestParam(name = "state", required = false) String state,
-      @RequestParam(name = "page", defaultValue = "" + DEFAULT_PAGE) int page) {
+      @RequestParam(name = "state", required = false) String state) {
     if (principalDetails == null) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
-    }
-
-    if (page < 1) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "page는 1 이상이어야 합니다.");
     }
 
     State stateFilter = state == null ? State.IN_PROGRESS : State.from(state);
 
     GetBookListResponse response =
-        bookService.getBookList(principalDetails.getUserId(), stateFilter, page - 1);
+        bookService.getBookList(principalDetails.getUserId(), stateFilter);
 
     return ApiResponse.success(response);
   }

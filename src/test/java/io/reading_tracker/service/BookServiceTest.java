@@ -70,8 +70,7 @@ class BookServiceTest {
     entityManager.clear();
 
     // when 로그인을 성공하면
-    int page = 0;
-    GetBookListResponse response = bookService.getBookList(user.getId(), State.IN_PROGRESS, page);
+    GetBookListResponse response = bookService.getBookList(user.getId(), State.IN_PROGRESS);
 
     List<Long> returnedIds =
         response.books().stream().map(GetBookListResponse.BookItem::id).toList();
@@ -110,8 +109,7 @@ class BookServiceTest {
     entityManager.clear();
 
     // when IN_PROGRESS 상태의 책이 없다면
-    int page = 0;
-    GetBookListResponse response1 = bookService.getBookList(user.getId(), State.IN_PROGRESS, page);
+    GetBookListResponse response1 = bookService.getBookList(user.getId(), State.IN_PROGRESS);
 
     // then 빈 배열을 반환한다
     assertThat(response1.books()).hasSize(0);
