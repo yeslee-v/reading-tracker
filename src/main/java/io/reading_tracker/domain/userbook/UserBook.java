@@ -101,8 +101,6 @@ public class UserBook extends BaseEntity {
       return;
     }
 
-    if (currentPage.equals(totalPages)) {
-      this.state = State.COMPLETED;
-    }
+    this.state = currentPage.equals(totalPages) ? State.COMPLETED : State.IN_PROGRESS;
   }
 }

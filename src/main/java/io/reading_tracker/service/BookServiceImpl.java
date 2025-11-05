@@ -139,7 +139,7 @@ public class BookServiceImpl implements BookService {
     Integer currentPage = request.currentPage();
     String state = request.state();
 
-    State targetState = state == null ? userBook.getState() : State.from(state);
+    State targetState = state == null ? null : State.from(state);
 
     userBook.updateProgress(targetState, userBook.getTotalPages(), currentPage);
 
