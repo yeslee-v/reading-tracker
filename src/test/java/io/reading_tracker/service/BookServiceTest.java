@@ -45,9 +45,9 @@ class BookServiceTest {
   @Autowired private EntityManager entityManager;
 
   @Test
-  @DisplayName("로그인 성공하면 읽던 책 목록을 생성일 역순으로 반환한다")
+  @DisplayName("로그인 성공하면 도서 목록을 생성일 역순으로 반환한다")
   void getBookList_returnsInProgressBooks_sortedByCreated() {
-    // given
+    // given 유저가
     User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
 
     Book first = bookRepository.save(new Book("책 A", "저자 A", "출판사 A", "isbn-1"));
@@ -69,14 +69,14 @@ class BookServiceTest {
     entityManager.flush();
     entityManager.clear();
 
-    // when
+    // when 로그인을 성공하면
     int page = 0;
     GetBookListResponse response = bookService.getBookList(user.getId(), State.IN_PROGRESS, page);
 
     List<Long> returnedIds =
         response.books().stream().map(GetBookListResponse.BookItem::id).toList();
 
-    // then
+    // then 도서 목록을 생성일 역순으로 반환한다
     assertThat(response.books()).hasSize(2);
 
     assertThat(returnedIds)
