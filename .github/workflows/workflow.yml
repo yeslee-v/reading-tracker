@@ -31,6 +31,9 @@ jobs:
 
       - name: Build and Test
         run: ./gradlew build
+        env:
+          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
 
   deploy:
     needs: build-and-test

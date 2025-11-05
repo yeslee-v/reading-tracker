@@ -13,7 +13,6 @@ import jakarta.persistence.Index;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.LinkedHashSet;
-import java.util.Objects;
 import java.util.Set;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -29,43 +28,29 @@ public class Book extends BaseEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(name = "name", nullable = false, length = 200)
-  private String name;
+  @Column(name = "title", nullable = false, length = 200)
+  private String title;
 
   @Column(nullable = false, length = 100)
   private String author;
 
+  @Column(length = 150)
+  private String publisher;
+
   @Column(length = 20)
   private String isbn;
 
-  @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-  private Set<UserBook> userBooks = new LinkedHashSet<>();
+  @OneToMany(
+      mappedBy = "book",
+      cascade = CascadeType.ALL,
+      orphanRemoval = true,
+      fetch = FetchType.LAZY)
+  private final Set<UserBook> userBooks = new LinkedHashSet<>();
 
-  public Book(String name, String author, String isbn) {
-    this.name = name;
+  public Book(String title, String author, String publisher, String isbn) {
+    this.title = title;
     this.author = author;
+    this.publisher = publisher;
     this.isbn = isbn;
-  }
-
-  public void updateMetadata(String name, String author, String isbn) {
-    this.name = name;
-    this.author = author;
-    this.isbn = isbn;
-  }
-
-  public void addUserBook(UserBook userBook) {
-    Objects.requireNonNull(userBook, "userBook은 null일 수 없습니다.");
-    userBooks.add(userBook);
-    userBook.setBook(this);
-  }
-
-  public void removeUserBook(UserBook userBook) {
-    if (userBook == null) {
-      return;
-    }
-
-    if (userBooks.remove(userBook)) {
-      userBook.setBook(null);
-    }
   }
 }

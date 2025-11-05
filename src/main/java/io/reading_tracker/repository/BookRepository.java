@@ -1,10 +1,11 @@
 package io.reading_tracker.repository;
 
-public interface BookRepository {
-//  List<Book> findByUserId(Long userId);
-//
-//  Book findById(Long id);
-//
-//  void save(Book book); // POST, UPDATE
+import io.reading_tracker.domain.book.Book;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
+@Repository
+public interface BookRepository extends JpaRepository<Book, Long> {
+  Optional<Book> findBookByIsbn(String isbn);
 }
