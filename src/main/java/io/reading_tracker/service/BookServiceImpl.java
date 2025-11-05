@@ -7,10 +7,10 @@ import io.reading_tracker.domain.userbook.UserBook;
 import io.reading_tracker.repository.BookRepository;
 import io.reading_tracker.repository.UserBookRepository;
 import io.reading_tracker.request.AddBookRequest;
-import io.reading_tracker.request.UpdateBookRequest;
+import io.reading_tracker.request.UpdateUserBookRequest;
 import io.reading_tracker.response.AddBookResponse;
 import io.reading_tracker.response.GetBookListResponse;
-import io.reading_tracker.response.UpdateBookResponse;
+import io.reading_tracker.response.UpdateUserBookResponse;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.List;
@@ -124,17 +124,17 @@ public class BookServiceImpl implements BookService {
 
   @Override
   @Transactional
-  public UpdateBookResponse updateBook(UpdateBookRequest request) {
+  public UpdateUserBookResponse updateUserBookProgress(User user, UpdateUserBookRequest request) {
     Long userBookId = request.id();
 
     if (userBookId == null) {
-      throw new IllegalArgumentException("도서 ID가 필요합니다.");
+      throw new IllegalArgumentException("사용자 목록 내 도서 ID가 존재하지 않습니다.");
     }
 
     UserBook userBook =
         userBookRepository
             .findById(userBookId)
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 도서입니다."));
+            .orElseThrow(() -> new IllegalArgumentException("해당 도서는 사용자 목록 내 존재하지 않습니다."));
 
     Integer currentPage = request.currentPage();
     String state = request.state();
@@ -143,7 +143,7 @@ public class BookServiceImpl implements BookService {
 
     userBook.updateProgress(targetState, userBook.getTotalPages(), currentPage);
 
-    return new UpdateBookResponse(
+    return new UpdateUserBookResponse(
         userBook.getId(),
         calculateProgress(userBook.getCurrentPage(), userBook.getTotalPages()),
         userBook.getCurrentPage(),
