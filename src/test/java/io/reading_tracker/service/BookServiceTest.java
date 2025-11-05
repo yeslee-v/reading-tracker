@@ -11,12 +11,15 @@ import io.reading_tracker.repository.BookRepository;
 import io.reading_tracker.repository.UserBookRepository;
 import io.reading_tracker.repository.UserRepository;
 import io.reading_tracker.request.AddBookRequest;
+import io.reading_tracker.request.UpdateUserBookRequest;
 import io.reading_tracker.response.AddBookResponse;
 import io.reading_tracker.response.GetBookListResponse;
+import io.reading_tracker.response.UpdateUserBookResponse;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -169,8 +172,31 @@ class BookServiceTest {
   @DisplayName("읽은 페이지를 업데이트하면 독서 진행률이 수정된다")
   void updateBook_withCurrentPage_returnsRateCalculated() {
     // given 읽은 페이지를
+    User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
+
+    AddBookRequest request =
+        new AddBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
+
+    AddBookResponse response = bookService.addBookToUserLibrary(user, request);
+
+    Long userBookId = response.id();
+    State state = response.state();
+    Integer totalPages = response.totalPages();
+
     // when 업데이트하면
+    Integer targetCurrentPage = 100;
+    UpdateUserBookRequest updatedRequest =
+        new UpdateUserBookRequest(userBookId, targetCurrentPage, state.toString());
+
+    UpdateUserBookResponse updatedResponse =
+        bookService.updateUserBookProgress(user, updatedRequest);
+
     // then 자동으로 독서 진행률이 수정된다
+    Assertions.assertThat(updatedResponse.currentPage()).isEqualTo(targetCurrentPage);
+
+    Integer expectedRate =
+        (int) Math.floor(updatedResponse.currentPage() / (double) totalPages * 100);
+    Assertions.assertThat(updatedResponse.progress()).isEqualTo(expectedRate);
   }
 
   @Test
