@@ -48,7 +48,7 @@ class BookServiceTest {
   @DisplayName("로그인 성공하면 도서 목록을 생성일 역순으로 반환한다")
   void getBookList_returnsInProgressBooks_sortedByCreated() {
     // given 유저가
-    User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
+    User user = userRepository.save(new User("tester", "tester@example.com"));
 
     Book first = bookRepository.save(new Book("책 A", "저자 A", "출판사 A", "isbn-1"));
     Book second = bookRepository.save(new Book("책 B", "저자 B", "출판사 B", "isbn-2"));
@@ -87,7 +87,7 @@ class BookServiceTest {
   @DisplayName("읽고 있는 책이 없다면 빈 배열을 반환한다")
   void getBookList_returnsEmptyList() {
     // given 로그인을 했는데
-    User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
+    User user = userRepository.save(new User("tester", "tester@example.com"));
 
     Book first = bookRepository.save(new Book("책 A", "저자 A", "출판사 A", "isbn-1"));
     Book second = bookRepository.save(new Book("책 B", "저자 B", "출판사 B", "isbn-2"));
@@ -128,7 +128,7 @@ class BookServiceTest {
   @DisplayName("선택한 도서를 추가하면 IN_PROGRESS 상태인 새 도서 정보를 반환한다")
   void addBook_returnsNewBookInformation() {
     // given 선택한 도서를
-    User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
+    User user = userRepository.save(new User("tester", "tester@example.com"));
 
     AddUserBookRequest request =
         new AddUserBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
@@ -313,7 +313,7 @@ class BookServiceTest {
   }
 
   private UserBook givenInitialUserBook() {
-    User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
+    User user = userRepository.save(new User("tester", "tester@example.com"));
 
     AddUserBookRequest request =
         new AddUserBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
@@ -324,7 +324,7 @@ class BookServiceTest {
   }
 
   private UserBook givenInitialUserBook(AddUserBookRequest request) {
-    User user = userRepository.save(new User("tester", "tester@example.com", "local", "local-1"));
+    User user = userRepository.save(new User("tester", "tester@example.com"));
 
     AddUserBookResponse response = bookService.addBookToUserLibrary(user, request);
 
