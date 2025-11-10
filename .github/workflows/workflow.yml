@@ -39,7 +39,7 @@ jobs:
           NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
           NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
 
-      - name: Upload JAT artifact
+      - name: Upload JAR artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-jar
@@ -64,7 +64,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::314670239902:role/github-actions-ecr-push-role
-          aws-region: ap-northwest-2
+          aws-region: ap-northeast-2
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -72,9 +72,9 @@ jobs:
 
       - name: Build and push Docker image
         env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry}}
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: reading-tracker-app
           IMAGE_TAG: latest
         run:
-          docker build -t $ECR_REGISTRY/#ECR_REPOSITORY:$IAMGE_TAG .
-          docker push $ECR_REGISTRY/#ECR_REPOSITORY:$IAMGE_TAG .
+          docker build -t $ECR_REGISTRY/#ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/#ECR_REPOSITORY:$IMAGE_TAG .
