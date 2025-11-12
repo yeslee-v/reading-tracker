@@ -83,6 +83,10 @@ jobs:
     needs: build-docker-and-push-ecr
     runs-on: ubuntu-latest
 
+    permissions:
+      id-token: write
+      contents: read
+
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -91,10 +95,9 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: AWS SSM Run Command
-        uses: aws-actions/amazon-ssm-send-command@v1
-        with:
-          aws-region: ap-northeast-2
-          instance-ids: i-0358680d268174b39
-          command: |
-            cd /home/ssm-user
-            ./run_app.sh
+        run: |
+          aws ssm send-command \
+          --instance-ids "i-0358680d268174b39" \
+          --document-name "AWS-RunShellScript" \
+          --parameters '{"commands":["cd /home/ssm-user","./run_app.sh"]}' \
+          --region "ap-northeast-2"
