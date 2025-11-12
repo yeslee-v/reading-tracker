@@ -91,7 +91,7 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: AWS SSM Run Command
-        uses: aws-actions/aws-ssm-send-command@v1
+        uses: aws-actions/amazon-ssm-send-command@v1
         with:
           aws-region: ap-northeast-2
           instance-ids: i-0358680d268174b39
