@@ -19,11 +19,6 @@ spring:
       health:
         show-details: always
 
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT}
-
   security:
     oauth2:
       client:
