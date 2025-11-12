@@ -78,3 +78,23 @@ jobs:
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+  docker-to-ec2:
+    needs: build-docker-and-push-ecr
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::314670239902:role/github-actions-ecr-push-role
+          aws-region: ap-northeast-2
+
+      - name: AWS SSM Run Command
+        uses: aws-actions/aws-ssm-send-command@v1
+        with:
+          aws-region: ap-northeast-2
+          instance-ids: i-0358680d268174b39
+          command: |
+            cd /home/ssm-user
+            ./run_app.sh
