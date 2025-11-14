@@ -14,13 +14,6 @@ spring:
         format_sql: false
     show-sql: false
 
-  data:
-    redis:
-      host: localhost
-      port: 6379
-      ssl:
-        enabled: false
-
   h2:
     console:
       enabled: true
