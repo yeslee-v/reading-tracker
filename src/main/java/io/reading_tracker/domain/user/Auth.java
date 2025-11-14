@@ -45,11 +45,11 @@ public class Auth extends BaseEntity {
   @Column(name = "provider_id", nullable = false, length = 100)
   private String providerId;
 
-  @Column(name = "refresh_token", nullable = false, columnDefinition = "TEXT")
+  @Column(name = "refresh_token", columnDefinition = "TEXT")
   private String refreshToken;
 
   /** refresh token 만료 시간, Access token 만료 시간은 Redis에서 관리 */
-  @Column(name = "expired_at", nullable = false)
+  @Column(name = "expired_at")
   private Instant expiredAt;
 
   public Auth(
@@ -57,6 +57,11 @@ public class Auth extends BaseEntity {
     this.user = user;
     this.provider = provider;
     this.providerId = providerId;
+    this.refreshToken = refreshToken;
+    this.expiredAt = expiredAt;
+  }
+
+  public void updateRefreshToken(String refreshToken, Instant expiredAt) {
     this.refreshToken = refreshToken;
     this.expiredAt = expiredAt;
   }
