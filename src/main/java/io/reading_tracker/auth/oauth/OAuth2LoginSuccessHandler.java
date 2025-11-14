@@ -17,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.OAuth2RefreshToken;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
@@ -44,15 +45,26 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
             oauthToken.getAuthorizedClientRegistrationId(), oauthToken.getName());
 
     String accessToken = client.getAccessToken().getTokenValue();
-    Instant acessExpiresAt = client.getAccessToken().getExpiresAt();
+    Instant accessExpiresAt = client.getAccessToken().getExpiresAt();
 
-    String refreshToken = client.getRefreshToken().getTokenValue();
-    Instant refreshExpiresAt = client.getRefreshToken().getExpiresAt();
+    OAuth2RefreshToken oauthRefreshToken = client.getRefreshToken();
+    String refreshToken = null;
+    Instant refreshExpiresAt = null;
 
-    log.debug("OAuth sucess: AT={} RT={}", accessToken, refreshToken);
+    if (oauthRefreshToken == null) {
+      log.warn(
+          "OAuth가 Refresh Token 주지 않음: userId={}, provider={}",
+          user.getId(),
+          oauthToken.getAuthorizedClientRegistrationId());
+    } else {
+      refreshToken = oauthRefreshToken.getTokenValue();
+      refreshExpiresAt = oauthRefreshToken.getExpiresAt();
+    }
+
+    log.debug("OAuth 로그인 성공: AT={} RT={}", accessToken, refreshToken);
 
     String redisKey = "at:" + user.getId();
-    Duration atTtl = Duration.between(Instant.now(), acessExpiresAt);
+    Duration atTtl = Duration.between(Instant.now(), accessExpiresAt);
 
     redisTemplate.opsForValue().set(redisKey, accessToken, atTtl);
 
@@ -63,11 +75,16 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
             .findByUserId(user.getId())
             .orElseThrow(() -> new IllegalStateException("Auth 정보가 없습니다"));
 
-    String encryptedRefreshToken = passwordEncoder.encode(refreshToken);
-    auth.updateRefreshToken(encryptedRefreshToken, refreshExpiresAt);
-    authRepository.save(auth);
-
-    log.info("Refresh Token DB 암호화 저장 완료: userId={}", user.getId());
+    if (refreshToken == null) {
+      if (auth.getRefreshToken() == null) {
+        log.error("저장된 Refresh Token 없음: userId={}", user.getId());
+      }
+    } else {
+      String encryptedRefreshToken = passwordEncoder.encode(refreshToken);
+      auth.updateRefreshToken(encryptedRefreshToken, refreshExpiresAt);
+      authRepository.save(auth);
+      log.info("Refresh Token DB 암호화 저장 완료: userId={}", user.getId());
+    }
 
     getRedirectStrategy().sendRedirect(request, response, "/");
   }
