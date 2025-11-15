@@ -1,12 +1,17 @@
 package io.reading_tracker.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.reading_tracker.auth.oauth.CustomOAuth2UserService;
 import io.reading_tracker.auth.oauth.OAuth2LoginSuccessHandler;
+import io.reading_tracker.exception.ErrorResponse;
 import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -23,10 +28,24 @@ public class SecurityConfig {
       HttpSecurity http,
       CorsConfigurationSource corsConfigurationSource,
       CustomOAuth2UserService customOAuth2UserService,
-      OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler)
+      OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
+      ObjectMapper objectMapper)
       throws Exception {
     http.cors(cors -> cors.configurationSource(corsConfigurationSource))
+        .formLogin(login -> login.disable())
         .csrf(csrf -> csrf.disable())
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .exceptionHandling(
+            exception ->
+                exception.authenticationEntryPoint(
+                    (request, response, authException) -> {
+                      response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                      response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+
+                      ErrorResponse errorResponse = new ErrorResponse("UNAUTHORIZED", "로그인이 필요합니다");
+                      response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+                    }))
         .authorizeHttpRequests(
             auth ->
                 auth.requestMatchers(

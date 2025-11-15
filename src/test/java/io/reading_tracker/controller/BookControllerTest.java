@@ -10,6 +10,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.reading_tracker.auth.PrincipalDetails;
 import io.reading_tracker.auth.PrincipalDetailsService;
+import io.reading_tracker.auth.oauth.CustomOAuth2UserService;
+import io.reading_tracker.auth.oauth.OAuth2LoginSuccessHandler;
+import io.reading_tracker.config.SecurityConfig;
 import io.reading_tracker.domain.book.State;
 import io.reading_tracker.domain.user.User;
 import io.reading_tracker.response.GetBookListResponse;
@@ -22,16 +25,20 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @WebMvcTest(BookController.class)
+@Import(SecurityConfig.class)
 @ActiveProfiles("test")
 class BookControllerTest {
 
@@ -42,6 +49,12 @@ class BookControllerTest {
   @MockitoBean private BookSearchService bookSearchService;
 
   @MockitoBean private PrincipalDetailsService principalDetailsService;
+
+  @MockitoBean private CorsConfigurationSource corsConfigurationSource;
+
+  @MockitoBean private CustomOAuth2UserService customOAuth2UserService;
+
+  @MockitoBean private OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
   @Autowired private ObjectMapper objectMapper;
 
@@ -107,13 +120,18 @@ class BookControllerTest {
   }
 
   @Test
+  @WithAnonymousUser
   @DisplayName("GET /api/books: 로그인에 실패하면 401 Unauthorized를 반환한다")
-  void getBookList_withInvalidUser_return401Unauthorized() {
+  void getBookList_withInvalidUser_return401Unauthorized() throws Exception {
     // given 미로그인 유저가
 
     // when getBookList를 호출하면
+    ResultActions result =
+        mockMvc.perform(get("/api/books").contentType(MediaType.APPLICATION_JSON));
 
     // then '로그인이 필요합니다'라는 메시지와 401 Unauthorized를 반환한다
+    result.andExpect(status().isUnauthorized());
+    result.andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
   }
 
   @Test
