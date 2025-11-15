@@ -1,16 +1,35 @@
 package io.reading_tracker.controller;
 
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.reading_tracker.auth.PrincipalDetails;
+import io.reading_tracker.auth.PrincipalDetailsService;
+import io.reading_tracker.domain.book.State;
+import io.reading_tracker.domain.user.User;
+import io.reading_tracker.response.GetBookListResponse;
+import io.reading_tracker.response.GetBookListResponse.BookItem;
+import io.reading_tracker.response.GetBookListResponse.Summary;
 import io.reading_tracker.service.BookSearchService;
 import io.reading_tracker.service.BookService;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 @WebMvcTest(BookController.class)
 @ActiveProfiles("test")
@@ -22,17 +41,69 @@ class BookControllerTest {
 
   @MockitoBean private BookSearchService bookSearchService;
 
+  @MockitoBean private PrincipalDetailsService principalDetailsService;
+
   @Autowired private ObjectMapper objectMapper;
 
   @Test
-  @WithMockUser
-  @DisplayName("GET /api/books: 도서 목록 불러오기를 성공하면 200 OK를 반환한다")
-  void getBookList_return200OK() {
-    // given state(null이면 IN_PROGRESS)로
+  @DisplayName("GET /api/books: 인자 없이 도서 목록 불러오기를 성공하면 IN_PROGRESS 상태로 200 OK를 반환한다")
+  void getBookList_withoutParameter_return200OK() throws Exception {
+    // given state 인자 없이
+    User fakeUser = new User("tester", "test@email.com"); // id: null
+    ReflectionTestUtils.setField(fakeUser, "id", 1L);
+
+    UserDetails fakePrincipal = new PrincipalDetails(fakeUser);
+
+    GetBookListResponse.Summary summary = new Summary(1, 1, 0);
+    GetBookListResponse fakeResponse =
+        new GetBookListResponse(
+            summary,
+            List.of(new BookItem(1L, "리팩토링 2판", "마틴 파울러", "한빛미디어", 1, 324, 0, State.IN_PROGRESS)));
+
+    given(bookService.getBookList(eq(1L), eq(State.IN_PROGRESS))).willReturn(fakeResponse);
 
     // when getBookList를 호출하면
+    ResultActions result =
+        mockMvc.perform(
+            get("/api/books").contentType(MediaType.APPLICATION_JSON).with(user(fakePrincipal)));
+
+    // then IN_PROGRESS 상태의 200 OK를 반환한다
+    result.andExpect(status().isOk());
+
+    result.andExpect(jsonPath("$.books[0].title").value("리팩토링 2판"));
+    result.andExpect(jsonPath("$.summary.inProgress").value(1));
+  }
+
+  @Test
+  @DisplayName("GET /api/books: State가 COMPLETE인 도서 목록 불러오기를 성공하면 200 OK를 반환한다")
+  void getBookList_withCOMPLETEStateParameter_return200OK() throws Exception {
+    // given state로
+    User fakeUser = new User("tester", "test@email.com");
+    ReflectionTestUtils.setField(fakeUser, "id", 1L);
+
+    UserDetails fakePrincipal = new PrincipalDetails(fakeUser);
+
+    GetBookListResponse.Summary summary = new Summary(1, 1, 0);
+    GetBookListResponse fakeResponse =
+        new GetBookListResponse(
+            summary,
+            List.of(new BookItem(1L, "클린 코드", "로버트 C.마틴", "인사이트", 518, 518, 0, State.COMPLETED)));
+
+    given(bookService.getBookList(eq(1L), eq(State.COMPLETED))).willReturn(fakeResponse);
+
+    // when getBookList를 호출하면
+    ResultActions result =
+        mockMvc.perform(
+            get("/api/books")
+                .param("state", "COMPLETED")
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(user(fakePrincipal)));
 
     // then 200 OK를 반환한다
+    result.andExpect(status().isOk());
+
+    result.andExpect(jsonPath("$.books[0].title").value("클린 코드"));
+    result.andExpect(jsonPath("$.summary.completed").value(1));
   }
 
   @Test
