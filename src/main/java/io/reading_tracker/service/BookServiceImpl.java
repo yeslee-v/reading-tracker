@@ -130,7 +130,7 @@ public class BookServiceImpl implements BookService {
     UserBook userBook =
         userBookRepository
             .findById(userBookId)
-            .orElseThrow(() -> new IllegalArgumentException("해당 도서는 사용자 목록 내 존재하지 않습니다."));
+            .orElseThrow(() -> new IllegalStateException("해당 도서는 사용자 목록 내 존재하지 않습니다."));
 
     Integer currentPage = request.currentPage();
     String state = request.state();
