@@ -1,13 +1,13 @@
 package io.reading_tracker.controller;
 
-import io.reading_tracker.request.UpdateNicknameRequest;
 import io.reading_tracker.domain.user.User;
+import io.reading_tracker.exception.UserNotFoundException;
+import io.reading_tracker.request.UpdateNicknameRequest;
 import io.reading_tracker.response.UserResponse;
 import io.reading_tracker.service.UserService;
-import io.reading_tracker.exception.UserNotFoundException;
-import io.reading_tracker.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -26,22 +26,22 @@ public class UserController {
   private final UserService userService;
 
   @GetMapping("/{userId}")
-  public ApiResponse<UserResponse> getUserById(@PathVariable Long userId) {
+  public ResponseEntity<UserResponse> getUserById(@PathVariable Long userId) {
     User user = userService.getUserById(userId);
-    return ApiResponse.success(UserResponse.from(user));
+    return ResponseEntity.ok(UserResponse.from(user));
   }
 
   @GetMapping("/search")
-  public ApiResponse<UserResponse> findUserByEmail(@RequestParam String email) {
+  public ResponseEntity<UserResponse> findUserByEmail(@RequestParam String email) {
     return userService
         .findUserByEmail(email)
         .map(UserResponse::from)
-        .map(ApiResponse::success)
+        .map(ResponseEntity::ok)
         .orElseThrow(() -> new UserNotFoundException(email));
   }
 
   @PatchMapping("/{userId}/nickname")
-  public ApiResponse<UserResponse> updateNickname(
+  public ResponseEntity<UserResponse> updateNickname(
       @PathVariable Long userId, @RequestBody UpdateNicknameRequest request) {
 
     if (request == null || !StringUtils.hasText(request.nickname())) {
@@ -49,6 +49,6 @@ public class UserController {
     }
 
     User updatedUser = userService.updateNickname(userId, request.nickname());
-    return ApiResponse.success(UserResponse.from(updatedUser));
+    return ResponseEntity.ok(UserResponse.from(updatedUser));
   }
 }

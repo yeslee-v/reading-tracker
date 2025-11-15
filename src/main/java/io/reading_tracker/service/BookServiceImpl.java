@@ -11,8 +11,6 @@ import io.reading_tracker.request.UpdateUserBookRequest;
 import io.reading_tracker.response.AddUserBookResponse;
 import io.reading_tracker.response.GetBookListResponse;
 import io.reading_tracker.response.UpdateUserBookResponse;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -30,10 +28,8 @@ public class BookServiceImpl implements BookService {
   private final BookRepository bookRepository;
   private final UserBookRepository userBookRepository;
 
-  @PersistenceContext private EntityManager entityManager;
-
   @Override
-  public GetBookListResponse getBookList(Long userId, State stateFilter, int page) {
+  public GetBookListResponse getBookList(Long userId, State stateFilter) {
     List<UserBook> userBooks =
         userBookRepository.findByUserIdAndState(userId, stateFilter, CREATED_AT_DESC);
 
@@ -134,7 +130,7 @@ public class BookServiceImpl implements BookService {
     UserBook userBook =
         userBookRepository
             .findById(userBookId)
-            .orElseThrow(() -> new IllegalArgumentException("해당 도서는 사용자 목록 내 존재하지 않습니다."));
+            .orElseThrow(() -> new IllegalStateException("해당 도서는 사용자 목록 내 존재하지 않습니다."));
 
     Integer currentPage = request.currentPage();
     String state = request.state();

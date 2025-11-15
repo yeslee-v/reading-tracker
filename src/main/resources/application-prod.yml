@@ -9,6 +9,14 @@ spring:
     hibernate:
       ddl-auto: update # TODO: Flyway로 변경 필요
 
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+      ssl:
+        enabled: true
+
 logging:
   level:
     com.yourcompany.myproject: INFO

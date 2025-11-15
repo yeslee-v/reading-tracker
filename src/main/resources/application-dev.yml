@@ -8,7 +8,19 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      ssl:
+        enabled: false
 
 logging:
   level:
     com.yourcompany.myproject: DEBUG
+    org.springframework.data.redis: DEBUG
