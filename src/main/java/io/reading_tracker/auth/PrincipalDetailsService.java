@@ -18,7 +18,7 @@ public class PrincipalDetailsService implements UserDetailsService {
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     User user =
         userRepository
-            .findByLoginId(username) // username: 로그인 창에 입력하는 아이디
+            .findByEmail(username) // username: 로그인 아이디로 사용하는 이메일
             .orElseThrow(() -> new UsernameNotFoundException("해당 유저를 찾을 수 없습니다."));
 
     return new PrincipalDetails(user);
