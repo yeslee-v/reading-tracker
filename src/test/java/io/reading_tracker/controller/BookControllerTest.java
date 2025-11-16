@@ -4,6 +4,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -168,13 +170,21 @@ class BookControllerTest {
   }
 
   @Test
+  @WithAnonymousUser
   @DisplayName("GET /api/books/search: 로그인을 하지 않은 유저가 도서를 검색하면 401 Unauthorized를 반환한다")
-  void searchBooks_withInvalidUser_return401Unauthorized() {
+  void searchBooks_withInvalidUser_return401Unauthorized() throws Exception {
     // given 로그인을 하지 않은 유저가
 
     // when searchBooks를 호출하면
+    ResultActions result =
+        mockMvc.perform(
+            get("/api/books/search")
+                .param("query", "클린 코드")
+                .contentType(MediaType.APPLICATION_JSON));
 
     // then 401 Unauthorized를 반환한다
+    result.andExpect(status().isUnauthorized());
+    result.andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
   }
 
   @Test
@@ -187,13 +197,18 @@ class BookControllerTest {
   }
 
   @Test
+  @WithAnonymousUser
   @DisplayName("POST /api/books: 로그인을 하지 않은 유저가 도서를 추가하면 401 Unauthorized를 반환한다")
-  void addBook_withInvalidUser_return401Unauthorized() {
+  void addBook_withInvalidUser_return401Unauthorized() throws Exception {
     // given 로그인을 하지 않은 유저가
 
     // when addBook을 호출하면
+    ResultActions result =
+        mockMvc.perform(post("/api/books").contentType(MediaType.APPLICATION_JSON));
 
     // then 401 Unauthorized를 반환한다
+    result.andExpect(status().isUnauthorized());
+    result.andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
   }
 
   @Test
@@ -217,13 +232,18 @@ class BookControllerTest {
   }
 
   @Test
+  @WithAnonymousUser
   @DisplayName("PATCH /api/books: 로그인을 하지 않은 유저가 도서를 수정하면 401 Unauthorized를 반환한다")
-  void updateBook_withInvalidUser_return401Unauthorized() {
+  void updateBook_withInvalidUser_return401Unauthorized() throws Exception {
     // given 로그인을 하지 않은 유저가
 
     // when updateBook을 호출하면
+    ResultActions result =
+        mockMvc.perform(patch("/api/books").contentType(MediaType.APPLICATION_JSON));
 
     // then 401 Unauthorized를 반환한다
+    result.andExpect(status().isUnauthorized());
+    result.andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
   }
 
   @Test
