@@ -20,6 +20,7 @@ import io.reading_tracker.domain.user.User;
 import io.reading_tracker.response.GetBookListResponse;
 import io.reading_tracker.response.GetBookListResponse.BookItem;
 import io.reading_tracker.response.GetBookListResponse.Summary;
+import io.reading_tracker.response.SearchBookResponse;
 import io.reading_tracker.service.BookSearchService;
 import io.reading_tracker.service.BookService;
 import java.util.List;
@@ -183,14 +184,37 @@ class BookControllerTest {
   }
 
   @Test
-  @WithMockUser
   @DisplayName("GET /api/books/search: 키워드로 검색하면 200 OK를 반환한다")
-  void searchBooks_withKeyword_return200OK() {
+  void searchBooks_withKeyword_return200OK() throws Exception {
     // given 키워드(도서명, ISBN 등)로
+    User fakeUser = new User("tester", "test@email.com");
+    ReflectionTestUtils.setField(fakeUser, "id", 1L);
+
+    UserDetails fakePrincipal = new PrincipalDetails(fakeUser);
+
+    SearchBookResponse.BookItem fakeBookItem =
+        new SearchBookResponse.BookItem(
+            "1234567890", "스프링의 모든 것", "김민주", "인사이트", "https://naver.com");
+
+    SearchBookResponse fakeResponse = new SearchBookResponse(1, 1, List.of(fakeBookItem));
+
+    given(bookSearchService.search(eq("스프링"))).willReturn(fakeResponse);
 
     // when searchBooks를 호출하면
+    ResultActions result =
+        mockMvc.perform(
+            get("/api/books/search")
+                .queryParam("query", "스프링")
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(user(fakePrincipal)));
 
     // then 200 OK를 반환한다
+    result.andExpect(status().isOk());
+
+    result.andExpect(jsonPath("$.total").value(1));
+    result.andExpect(jsonPath("$.display").value(1));
+    result.andExpect(jsonPath("$.items[0].isbn").value("1234567890"));
+    result.andExpect(jsonPath("$.items[0].title").value("스프링의 모든 것"));
   }
 
   @Test
