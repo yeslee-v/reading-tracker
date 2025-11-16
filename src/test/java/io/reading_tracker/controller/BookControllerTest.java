@@ -161,14 +161,25 @@ class BookControllerTest {
   }
 
   @Test
-  @WithMockUser
   @DisplayName("GET /api/books: 도서 목록을 불러오는 중 서버가 터지면 500 Internal Server Error를 반환한다")
-  void getBookList_return500InternalServerError() {
+  void getBookList_return500InternalServerError() throws Exception {
     // given getBookList를 호출하는데
+    User fakeUser = new User("tester", "test@email.com");
+    ReflectionTestUtils.setField(fakeUser, "id", 1L);
+
+    UserDetails fakePrincipal = new PrincipalDetails(fakeUser);
+
+    given(bookService.getBookList(eq(1L), eq(State.IN_PROGRESS)))
+        .willThrow(new RuntimeException("fake 서버가 터졌습니다(db 에러 등)"));
 
     // when 서버가 터지면
+    ResultActions result =
+        mockMvc.perform(
+            get("/api/books").contentType(MediaType.APPLICATION_JSON).with(user(fakePrincipal)));
 
     // then 500 Internal Server Error를 반환한다
+    result.andExpect(status().isInternalServerError());
+    result.andExpect(jsonPath("$.code").value("INTERNAL_SERVER_ERROR"));
   }
 
   @Test
