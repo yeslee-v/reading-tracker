@@ -218,6 +218,61 @@ class BookControllerTest {
   }
 
   @Test
+  @DisplayName("GET /api/books/search: 검색 결과가 0개인 키워드로 검색하면 200 OK와 빈 리스트를 반환한다")
+  void searchBooks_withInvalidKeyword_return200OK() throws Exception {
+    // given 검색 결과가 0개인 키워드로
+    User fakeUser = new User("tester", "test@email.com");
+    ReflectionTestUtils.setField(fakeUser, "id", 1L);
+
+    UserDetails fakePrincipal = new PrincipalDetails(fakeUser);
+
+    String noResultKeyword = "ㅁㄴㅇㄹ";
+    SearchBookResponse fakeResponse = new SearchBookResponse(0, 0, List.of());
+
+    given(bookSearchService.search(eq(noResultKeyword))).willReturn(fakeResponse);
+
+    // when searchBooks를 호출하면
+    ResultActions result =
+        mockMvc.perform(
+            get("/api/books/search")
+                .queryParam("query", noResultKeyword)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(user(fakePrincipal)));
+
+    // then 200 OK와 빈 리스트를 반환한다
+    result.andExpect(status().isOk());
+
+    result.andExpect(jsonPath("$.total").value(0));
+    result.andExpect(jsonPath("$.display").value(0));
+    result.andExpect(jsonPath("$.items.length()").value(0));
+  }
+
+  @Test
+  @DisplayName("GET /api/books/search: 네이버 도서 검색 API 호출을 실패하면 500 Internal Server Error를 반환한다")
+  void searchBooks_return500InternalServerError() throws Exception {
+    // given searchBooks를 호출하는데
+    User fakeUser = new User("tester", "test@email.com");
+    ReflectionTestUtils.setField(fakeUser, "id", 1L);
+
+    UserDetails fakePrincipal = new PrincipalDetails(fakeUser);
+
+    given(bookSearchService.search(eq("스프링")))
+        .willThrow(new RuntimeException("네이버 도서 검색 fake API 서버가 터졌습니다"));
+
+    // when 네이버 도서 검색 API가 터지면
+    ResultActions result =
+        mockMvc.perform(
+            get("/api/books/search")
+                .queryParam("query", "스프링")
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(user(fakePrincipal)));
+
+    // then 500 Internal Server Error를 반환한다
+    result.andExpect(status().isInternalServerError());
+    result.andExpect(jsonPath("$.code").value("INTERNAL_SERVER_ERROR"));
+  }
+
+  @Test
   @WithAnonymousUser
   @DisplayName("GET /api/books/search: 로그인을 하지 않은 유저가 도서를 검색하면 401 Unauthorized를 반환한다")
   void searchBooks_withInvalidUser_return401Unauthorized() throws Exception {
