@@ -1,5 +1,6 @@
 package io.reading_tracker.controller;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -17,6 +18,8 @@ import io.reading_tracker.auth.oauth.OAuth2LoginSuccessHandler;
 import io.reading_tracker.config.SecurityConfig;
 import io.reading_tracker.domain.book.State;
 import io.reading_tracker.domain.user.User;
+import io.reading_tracker.request.AddUserBookRequest;
+import io.reading_tracker.response.AddUserBookResponse;
 import io.reading_tracker.response.GetBookListResponse;
 import io.reading_tracker.response.GetBookListResponse.BookItem;
 import io.reading_tracker.response.GetBookListResponse.Summary;
@@ -291,12 +294,36 @@ class BookControllerTest {
   }
 
   @Test
-  @WithMockUser
   @DisplayName("POST /api/books: 도서를 추가하면 201 CREATED를 반환한다")
-  void addBook_withBookRequest_returns201Created() {
+  void addBook_withBookRequest_returns201Created() throws Exception {
     // given 추가할 도서 정보로
+    User fakeUser = new User("tester", "test@email.com");
+    ReflectionTestUtils.setField(fakeUser, "id", 1L);
+
+    UserDetails fakePrincipal = new PrincipalDetails(fakeUser);
+
+    AddUserBookRequest fakeRequest =
+        new AddUserBookRequest("0987654321", "리팩토링 2판", "마틴 파울러", "한빛미디어", 301);
+
+    AddUserBookResponse fakeResponse =
+        new AddUserBookResponse(1L, "리팩토링 2판", "마틴 파울러", "한빛미디어", State.IN_PROGRESS, 1, 301);
+
+    given(bookService.addBookToUserLibrary(any(User.class), any(AddUserBookRequest.class)))
+        .willReturn(fakeResponse);
+
     // when addBook을 호출하면
+    ResultActions result =
+        mockMvc.perform(
+            post("/api/books")
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(user(fakePrincipal))
+                .content(objectMapper.writeValueAsString(fakeRequest)));
+
     // then 201 CREATED를 반환한다
+    result.andExpect(status().isCreated());
+
+    result.andExpect(jsonPath("$.id").value(1L));
+    result.andExpect(jsonPath("$.title").value("리팩토링 2판"));
   }
 
   @Test
