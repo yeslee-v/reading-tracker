@@ -13,8 +13,8 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
   public ResponseEntity<Object> handleBadRequestException(Exception e) {
-    log.error("400 Bad Request: {}", e.getMessage());
-    ErrorResponse errorResponse = new ErrorResponse("BAD_REQUEST", e.getMessage());
+    log.warn("400 Bad Request: {}", e.getMessage());
+    ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.name(), e.getMessage());
     return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
   }
 

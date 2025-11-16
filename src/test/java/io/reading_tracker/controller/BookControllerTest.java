@@ -137,14 +137,27 @@ class BookControllerTest {
   }
 
   @Test
-  @WithMockUser
-  @DisplayName("GET /api/books: 존재하지 않는 state로 도서 목록을 불러오면 400 Bad Request를 반환한다")
-  void getBookList_withInvalidState_return400BadRequest() {
-    // given 존재하지 않는 state로
+  @DisplayName("GET /api/books: 유효하지 않은 state로 도서 목록을 불러오면 400 Bad Request를 반환한다")
+  void getBookList_withInvalidState_return400BadRequest() throws Exception {
+    // given 유효하지 않은 state로
+    User fakeUser = new User("tester", "test@email.com");
+    ReflectionTestUtils.setField(fakeUser, "id", 1L);
+
+    UserDetails fakePrincipal = new PrincipalDetails(fakeUser);
+
+    String invalidState = "INPROGRESS";
 
     // when getBookList를 호출하면
+    ResultActions result =
+        mockMvc.perform(
+            get("/api/books")
+                .param("state", invalidState)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(user(fakePrincipal)));
 
     // then 400 Bad Request를 반환한다
+    result.andExpect(status().isBadRequest());
+    result.andExpect(jsonPath("$.code").value("BAD_REQUEST"));
   }
 
   @Test
