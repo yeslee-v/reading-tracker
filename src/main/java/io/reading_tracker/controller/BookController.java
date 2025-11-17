@@ -10,6 +10,7 @@ import io.reading_tracker.response.SearchBookResponse;
 import io.reading_tracker.response.UpdateUserBookResponse;
 import io.reading_tracker.service.BookSearchService;
 import io.reading_tracker.service.BookService;
+import jakarta.validation.Valid;
 import java.util.Collections;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -71,13 +72,9 @@ public class BookController {
   @PostMapping
   public ResponseEntity<AddUserBookResponse> addBook(
       @AuthenticationPrincipal PrincipalDetails principalDetails,
-      @RequestBody AddUserBookRequest request) {
+      @Valid @RequestBody AddUserBookRequest request) {
     if (principalDetails == null) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다");
-    }
-
-    if (request == null) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "추가할 책 정보가 없습니다.");
     }
 
     AddUserBookResponse response =
