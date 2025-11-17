@@ -115,15 +115,6 @@ class BookServiceTest {
     assertThat(response1.books()).hasSize(0);
   }
 
-  /** 도서 검색에 외부 API를 사용하므로 Controller에서 테스트 진행 */
-  //  @Test
-  //  @DisplayName("키워드로 검색하면 관련 도서 정보가 반환된다")
-  //  void searchBook_returnsMatchingBookList_ByKeyword() {
-  //    // given 키워드(도서명, ISBN 등)이 주어지면
-  //    // when 검색했을 때
-  //    // then 관련 도서 목록이 반환된다
-  //  }
-
   @Test
   @DisplayName("선택한 도서를 추가하면 IN_PROGRESS 상태인 새 도서 정보를 반환한다")
   void addBook_returnsNewBookInformation() {
@@ -177,7 +168,7 @@ class BookServiceTest {
     // when 업데이트하면
     Integer targetCurrentPage = 100;
     UpdateUserBookRequest updatedRequest =
-        new UpdateUserBookRequest(userBookId, targetCurrentPage, state.toString());
+        new UpdateUserBookRequest(userBookId, targetCurrentPage, state);
 
     UpdateUserBookResponse updatedResponse =
         bookService.updateUserBookProgress(user, updatedRequest);
@@ -188,6 +179,25 @@ class BookServiceTest {
     Integer expectedRate =
         (int) Math.floor(updatedResponse.currentPage() / (double) totalPages * 100);
     Assertions.assertThat(updatedResponse.progress()).isEqualTo(expectedRate);
+  }
+
+  @Test
+  @DisplayName("유저 도서 목록에 존재하지 않는 도서는 업데이트할 수 없다")
+  void updateBook_withNotExistBook_ThrowsError() {
+    // given 유저 도서 목록에 존재하지 않는 도서를
+    UserBook userBook = givenInitialUserBook();
+    User user = userBook.getUser();
+
+    State state = userBook.getState();
+
+    // when 업데이트하면
+    Integer targetCurrentPage = 301;
+    UpdateUserBookRequest updatedRequest = new UpdateUserBookRequest(2L, targetCurrentPage, state);
+
+    // then 해당 도서는 사용자 목록 내 존재하지 않습니다는 에러를 반환한다
+    assertThatThrownBy(() -> bookService.updateUserBookProgress(user, updatedRequest))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("해당 도서는 사용자 목록 내 존재하지 않습니다.");
   }
 
   @Test
@@ -203,7 +213,7 @@ class BookServiceTest {
     // when 업데이트하면
     Integer targetCurrentPage = 301;
     UpdateUserBookRequest updatedRequest =
-        new UpdateUserBookRequest(userBookId, targetCurrentPage, state.toString());
+        new UpdateUserBookRequest(userBookId, targetCurrentPage, state);
 
     // then 읽은 페이지는 전체 페이지 값보다 작거나 같아야한다는 에러를 반환한다
     assertThatThrownBy(() -> bookService.updateUserBookProgress(user, updatedRequest))
@@ -224,7 +234,7 @@ class BookServiceTest {
     // when 업데이트하면
     Integer targetCurrentPage = -1;
     UpdateUserBookRequest updatedRequest =
-        new UpdateUserBookRequest(userBookId, targetCurrentPage, state.toString());
+        new UpdateUserBookRequest(userBookId, targetCurrentPage, state);
 
     // then 읽은 페이지는 1 이상이어야 한다는 에러를 반환한다
     assertThatThrownBy(() -> bookService.updateUserBookProgress(user, updatedRequest))
@@ -242,8 +252,8 @@ class BookServiceTest {
     Long userBookId = userBook.getId();
 
     // when 직접 주어지면
-    String targetState = "ARCHIVED";
-    UpdateUserBookRequest updatedRequest = new UpdateUserBookRequest(userBookId, null, targetState);
+    UpdateUserBookRequest updatedRequest =
+        new UpdateUserBookRequest(userBookId, null, State.ARCHIVED);
 
     UpdateUserBookResponse updatedResponse =
         bookService.updateUserBookProgress(user, updatedRequest);
