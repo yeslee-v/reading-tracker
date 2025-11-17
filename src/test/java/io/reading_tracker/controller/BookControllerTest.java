@@ -428,6 +428,33 @@ class BookControllerTest {
   }
 
   @Test
+  @DisplayName("PATCH /api/books: 도서의 현재 페이지와 상태 값이 전부 존재하면 에러를 반환한다")
+  void updateBook_withCurrentPageAndState_return400BadRequest() throws Exception {
+    // given 변경하려고 하는 도서의 현재 페이지 또는 상태 전부 보내고
+    User fakeUser = new User("tester", "test@email.com");
+    ReflectionTestUtils.setField(fakeUser, "id", 1L);
+
+    UserDetails fakePrincipal = new PrincipalDetails(fakeUser);
+
+    Integer targetCurrentPage = 150;
+    State targetState = State.COMPLETED;
+    UpdateUserBookRequest fakeRequest =
+        new UpdateUserBookRequest(1L, targetCurrentPage, targetState);
+
+    // when updateBook을 호출하면
+    ResultActions result =
+        mockMvc.perform(
+            patch("/api/books")
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(user(fakePrincipal))
+                .content(objectMapper.writeValueAsString(fakeRequest)));
+
+    // then 400 Bad Request를 반환한다
+    result.andExpect(status().isBadRequest());
+    result.andExpect(jsonPath("$.code").value("BAD_REQUEST"));
+  }
+
+  @Test
   @WithAnonymousUser
   @DisplayName("PATCH /api/books: 로그인을 하지 않은 유저가 도서를 수정하면 401 Unauthorized를 반환한다")
   void updateBook_withInvalidUser_return401Unauthorized() throws Exception {
