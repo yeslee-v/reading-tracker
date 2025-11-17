@@ -96,8 +96,20 @@ public class UserBook extends BaseEntity {
 
   private void updateStateAfterProgress(State requestedState, Integer currentPage) {
 
-    if (requestedState != null) {
+    if (requestedState == State.COMPLETED) {
+      this.currentPage = this.totalPages;
       this.state = requestedState;
+
+      return;
+    } else if (requestedState == State.ARCHIVED
+        || (this.state == State.ARCHIVED && requestedState == State.IN_PROGRESS)) {
+      this.state = requestedState;
+
+      return;
+    } else if (requestedState == State.IN_PROGRESS) {
+      this.currentPage = 1;
+      this.state = requestedState;
+
       return;
     }
 
