@@ -37,7 +37,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.test.context.support.WithAnonymousUser;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -444,13 +443,32 @@ class BookControllerTest {
   }
 
   @Test
-  @WithMockUser
-  @DisplayName("PATCH /api/books: 존재하지 않는 state 값으로 도서를 수정하면 400 Bad Request를 반환한다")
-  void updateBook_withInvalidState_return400BadRequest() {
-    // given 존재하지 않는 state로
+  @DisplayName("PATCH /api/books: 유효하지 않은 state 값으로 도서를 수정하면 400 Bad Request를 반환한다")
+  void updateBook_withInvalidState_return400BadRequest() throws Exception {
+    // given 유효하지 않은 state로
+    User fakeUser = new User("tester", "test@email.com");
+    ReflectionTestUtils.setField(fakeUser, "id", 1L);
+
+    UserDetails fakePrincipal = new PrincipalDetails(fakeUser);
+
+    String invalidRequest =
+        """
+    {
+      "id": 1,
+      "state": "INVALID_STATE"
+    }
+    """;
 
     // when updateBook을 호출하면
+    ResultActions result =
+        mockMvc.perform(
+            patch("/api/books")
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(user(fakePrincipal))
+                .content(invalidRequest));
 
     // then 400 Bad Request를 반환한다
+    result.andExpect(status().isBadRequest());
+    result.andExpect(jsonPath("$.code").value("BAD_REQUEST"));
   }
 }
