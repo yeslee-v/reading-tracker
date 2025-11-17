@@ -342,14 +342,29 @@ class BookControllerTest {
   }
 
   @Test
-  @WithMockUser
-  @DisplayName("POST /api/books: 도서 정보가 없는 도서를 추가하면 400 Bad Request를 반환한다")
-  void addBook_withInvalidRequest_return400BadRequest() {
+  @DisplayName("POST /api/books: 도서 정보가 존재하지 않는 도서를 추가하면 400 Bad Request를 반환한다")
+  void addBook_withInvalidRequest_return400BadRequest() throws Exception {
     // given 도서 정보가 존재하지 않는 도서로
+    User fakeUser = new User("tester", "test@email.com");
+    ReflectionTestUtils.setField(fakeUser, "id", 1L);
+
+    UserDetails fakePrincipal = new PrincipalDetails(fakeUser);
+
+    Integer invalidTotalPages = 0;
+    AddUserBookRequest fakeRequest =
+        new AddUserBookRequest("1234567890", "리팩토링 2판", "마틴 파울러", "한빛미디어", invalidTotalPages);
 
     // when addBook을 호출하면
+    ResultActions result =
+        mockMvc.perform(
+            post("/api/books")
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(user(fakePrincipal))
+                .content(objectMapper.writeValueAsString(fakeRequest)));
 
     // then 400 Bad Request를 반환한다
+    result.andExpect(status().isBadRequest());
+    result.andExpect(jsonPath("$.code").value("BAD_REQUEST"));
   }
 
   @Test
