@@ -19,11 +19,13 @@ import io.reading_tracker.config.SecurityConfig;
 import io.reading_tracker.domain.book.State;
 import io.reading_tracker.domain.user.User;
 import io.reading_tracker.request.AddUserBookRequest;
+import io.reading_tracker.request.UpdateUserBookRequest;
 import io.reading_tracker.response.AddUserBookResponse;
 import io.reading_tracker.response.GetBookListResponse;
 import io.reading_tracker.response.GetBookListResponse.BookItem;
 import io.reading_tracker.response.GetBookListResponse.Summary;
 import io.reading_tracker.response.SearchBookResponse;
+import io.reading_tracker.response.UpdateUserBookResponse;
 import io.reading_tracker.service.BookSearchService;
 import io.reading_tracker.service.BookService;
 import java.util.List;
@@ -368,12 +370,62 @@ class BookControllerTest {
   }
 
   @Test
-  @WithMockUser
   @DisplayName("PATCH /api/books: 도서의 현재 페이지 또는 상태를 수정하면 200 OK를 반환한다")
-  void updateBook_withCurrentPageOrState_return200OK() {
-    // given 도서의 현재 페이지 또는 상태로
+  void updateBook_withCurrentPageAndState_return200OK() throws Exception {
+    // given 변경하려고 하는 도서의 현재 페이지 또는 상태로
+    User fakeUser = new User("tester", "test@email.com");
+    ReflectionTestUtils.setField(fakeUser, "id", 1L);
+
+    UserDetails fakePrincipal = new PrincipalDetails(fakeUser);
+
+    Integer fakeCurrentPage = 21;
+    Integer fakeTotalPages = 301;
+    Integer fakeProgress = (int) Math.floor((double) fakeCurrentPage / fakeTotalPages * 100.0);
+
+    UpdateUserBookRequest fakeRequest = new UpdateUserBookRequest(1L, fakeCurrentPage, null);
+    UpdateUserBookResponse fakeResponse =
+        new UpdateUserBookResponse(1L, fakeProgress, fakeCurrentPage, State.IN_PROGRESS);
+
+    given(bookService.updateUserBookProgress(any(User.class), any(UpdateUserBookRequest.class)))
+        .willReturn(fakeResponse);
+
     // when updateBook을 호출하면
+    ResultActions result =
+        mockMvc.perform(
+            patch("/api/books")
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(user(fakePrincipal))
+                .content(objectMapper.writeValueAsString(fakeRequest)));
+
     // then 200 OK를 반환한다
+    result.andExpect(status().isOk());
+
+    result.andExpect(jsonPath("$.progress").value(fakeProgress));
+    result.andExpect(jsonPath("$.currentPage").value(21));
+  }
+
+  @Test
+  @DisplayName("PATCH /api/books: 도서의 현재 페이지와 상태 값이 전부 존재하지 않으면 400 Bad Request를 반환한다")
+  void updateBook_withNoCurrentPageAndNoState_return400BadRequest() throws Exception {
+    // given 변경하려고 하는 도서의 현재 페이지 또는 상태 전부 보내지 않고
+    User fakeUser = new User("tester", "test@email.com");
+    ReflectionTestUtils.setField(fakeUser, "id", 1L);
+
+    UserDetails fakePrincipal = new PrincipalDetails(fakeUser);
+
+    UpdateUserBookRequest fakeRequest = new UpdateUserBookRequest(1L, null, null);
+
+    // when updateBook을 호출하면
+    ResultActions result =
+        mockMvc.perform(
+            patch("/api/books")
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(user(fakePrincipal))
+                .content(objectMapper.writeValueAsString(fakeRequest)));
+
+    // then 400 Bad Request를 반환한다
+    result.andExpect(status().isBadRequest());
+    result.andExpect(jsonPath("$.code").value("BAD_REQUEST"));
   }
 
   @Test
@@ -389,17 +441,6 @@ class BookControllerTest {
     // then 401 Unauthorized를 반환한다
     result.andExpect(status().isUnauthorized());
     result.andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
-  }
-
-  @Test
-  @WithMockUser
-  @DisplayName("PATCH /api/books: 전체 페이지 값보다 큰 변경할 페이지 값으로 도서를 수정하면 400 Bad Request를 반환한다")
-  void updateBook_withCurrentPageBiggerThanTotalPages_return400BadRequest() {
-    // given 전체 페이지 값보다 큰 변경할 페이지로
-
-    // when updateBook을 호출하면
-
-    // then 400 Bad Request를 반환한다
   }
 
   @Test
