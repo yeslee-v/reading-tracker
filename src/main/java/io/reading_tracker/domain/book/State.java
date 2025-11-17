@@ -1,7 +1,5 @@
 package io.reading_tracker.domain.book;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 public enum State {
   IN_PROGRESS,
@@ -15,7 +13,7 @@ public enum State {
       case "COMPLETED" -> State.COMPLETED;
       case "ARCHIVED" -> State.ARCHIVED;
       default ->
-          throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "지원하지 않는 상태입니다: " + state);
+          throw new IllegalArgumentException("지원하지 않는 상태입니다: " + state);
     };
   }
 }

@@ -10,9 +10,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.util.LinkedHashSet;
-import java.util.Objects;
 import java.util.Set;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -21,11 +22,21 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "users")
+@Table(
+    name = "users",
+    uniqueConstraints = {@UniqueConstraint(name = "uk_user_email", columnNames = "email")})
 public class User extends BaseEntity {
+
+  @OneToMany(
+      mappedBy = "user",
+      cascade = CascadeType.ALL,
+      orphanRemoval = true,
+      fetch = FetchType.LAZY)
+  private final Set<UserBook> userBooks = new LinkedHashSet<>();
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(nullable = false)
   private Long id;
 
   @Column(nullable = false, length = 50)
@@ -34,20 +45,12 @@ public class User extends BaseEntity {
   @Column(nullable = false, length = 255)
   private String email;
 
-  @Column(nullable = false, length = 20)
-  private String provider;
+  @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
+  private Auth auth;
 
-  @Column(name = "provider_id", nullable = false, length = 100)
-  private String providerId;
-
-  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-  private Set<UserBook> userBooks = new LinkedHashSet<>();
-
-  public User(String nickname, String email, String provider, String providerId) {
+  public User(String nickname, String email) {
     this.nickname = nickname;
     this.email = email;
-    this.provider = provider;
-    this.providerId = providerId;
   }
 
   public void updateProfile(String nickname, String email) {
@@ -61,21 +64,5 @@ public class User extends BaseEntity {
     }
 
     this.nickname = nickname;
-  }
-
-  public void addUserBook(UserBook userBook) {
-    Objects.requireNonNull(userBook, "userBook은 null일 수 없습니다.");
-    userBooks.add(userBook);
-    userBook.setUser(this);
-  }
-
-  public void removeUserBook(UserBook userBook) {
-    if (userBook == null) {
-      return;
-    }
-
-    if (userBooks.remove(userBook)) {
-      userBook.setUser(null);
-    }
   }
 }

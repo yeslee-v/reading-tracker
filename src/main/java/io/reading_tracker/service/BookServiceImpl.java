@@ -11,8 +11,6 @@ import io.reading_tracker.request.UpdateUserBookRequest;
 import io.reading_tracker.response.AddUserBookResponse;
 import io.reading_tracker.response.GetBookListResponse;
 import io.reading_tracker.response.UpdateUserBookResponse;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -30,10 +28,8 @@ public class BookServiceImpl implements BookService {
   private final BookRepository bookRepository;
   private final UserBookRepository userBookRepository;
 
-  @PersistenceContext private EntityManager entityManager;
-
   @Override
-  public GetBookListResponse getBookList(Long userId, State stateFilter, int page) {
+  public GetBookListResponse getBookList(Long userId, State stateFilter) {
     List<UserBook> userBooks =
         userBookRepository.findByUserIdAndState(userId, stateFilter, CREATED_AT_DESC);
 
@@ -75,22 +71,6 @@ public class BookServiceImpl implements BookService {
     String isbn = request.isbn();
     Integer totalPages = request.totalPages();
 
-    if (title == null) {
-      throw new IllegalArgumentException("책 제목이 필요합니다.");
-    }
-
-    if (author == null) {
-      throw new IllegalArgumentException("저자 정보가 필요합니다.");
-    }
-
-    if (isbn == null) {
-      throw new IllegalArgumentException("ISBN이 필요합니다.");
-    }
-
-    if (totalPages == null || totalPages < 1) {
-      throw new IllegalArgumentException("전체 페이지 수는 1 이상이어야 합니다.");
-    }
-
     Book book =
         bookRepository
             .findBookByIsbn(isbn)
@@ -127,20 +107,14 @@ public class BookServiceImpl implements BookService {
   public UpdateUserBookResponse updateUserBookProgress(User user, UpdateUserBookRequest request) {
     Long userBookId = request.id();
 
-    if (userBookId == null) {
-      throw new IllegalArgumentException("사용자 목록 내 도서 ID가 존재하지 않습니다.");
-    }
-
     UserBook userBook =
         userBookRepository
             .findById(userBookId)
-            .orElseThrow(() -> new IllegalArgumentException("해당 도서는 사용자 목록 내 존재하지 않습니다."));
+            .orElseThrow(() -> new IllegalStateException("해당 도서는 사용자 목록 내 존재하지 않습니다."));
 
     Integer currentPage = request.currentPage();
-    String state = request.state();
 
-    State targetState = state == null ? null : State.from(state);
-
+    State targetState = request.state();
     userBook.updateProgress(targetState, userBook.getTotalPages(), currentPage);
 
     return new UpdateUserBookResponse(
