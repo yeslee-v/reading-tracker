@@ -113,10 +113,8 @@ public class BookServiceImpl implements BookService {
             .orElseThrow(() -> new IllegalStateException("해당 도서는 사용자 목록 내 존재하지 않습니다."));
 
     Integer currentPage = request.currentPage();
-    String state = request.state();
 
-    State targetState = state == null ? null : State.from(state);
-
+    State targetState = request.state();
     userBook.updateProgress(targetState, userBook.getTotalPages(), currentPage);
 
     return new UpdateUserBookResponse(

@@ -1,5 +1,6 @@
 package io.reading_tracker.request;
 
+import io.reading_tracker.domain.book.State;
 import io.reading_tracker.validation.AtLeastOneNotNull;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -10,4 +11,4 @@ import jakarta.validation.constraints.NotNull;
 public record UpdateUserBookRequest(
     @NotNull(message = "id는 필수입니다") Long id,
     @Min(value = 1, message = "currentPage는 1 이상이어야 합니다") Integer currentPage,
-    String state) {}
+    State state) {}
