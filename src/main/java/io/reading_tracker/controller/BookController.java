@@ -86,13 +86,9 @@ public class BookController {
   @PatchMapping
   public ResponseEntity<UpdateUserBookResponse> updateBook(
       @AuthenticationPrincipal PrincipalDetails principalDetails,
-      @RequestBody UpdateUserBookRequest request) {
+      @Valid @RequestBody UpdateUserBookRequest request) {
     if (principalDetails == null) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다");
-    }
-
-    if (request == null) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정할 책 정보가 없습니다.");
     }
 
     UpdateUserBookResponse response =

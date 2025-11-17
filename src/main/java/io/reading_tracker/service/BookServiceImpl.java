@@ -107,10 +107,6 @@ public class BookServiceImpl implements BookService {
   public UpdateUserBookResponse updateUserBookProgress(User user, UpdateUserBookRequest request) {
     Long userBookId = request.id();
 
-    if (userBookId == null) {
-      throw new IllegalArgumentException("사용자 목록 내 도서 ID가 존재하지 않습니다.");
-    }
-
     UserBook userBook =
         userBookRepository
             .findById(userBookId)
