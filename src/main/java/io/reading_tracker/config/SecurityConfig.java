@@ -42,6 +42,7 @@ public class SecurityConfig {
                     (request, response, authException) -> {
                       response.setStatus(HttpStatus.UNAUTHORIZED.value());
                       response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                      response.setCharacterEncoding("UTF-8");
 
                       ErrorResponse errorResponse = new ErrorResponse("UNAUTHORIZED", "로그인이 필요합니다");
                       response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
