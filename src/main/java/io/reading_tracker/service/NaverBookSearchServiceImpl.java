@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -31,6 +32,7 @@ public class NaverBookSearchServiceImpl implements BookSearchService {
   }
 
   @Override
+  @Cacheable(cacheNames = "naverBookSearch", key = "#query")
   public SearchBookResponse search(String query) {
     try {
       NaverBookSearchResponse response =
@@ -48,8 +50,6 @@ public class NaverBookSearchServiceImpl implements BookSearchService {
           response.items() == null ? Collections.emptyList() : response.items();
 
       List<SearchBookResponse.BookItem> mappedItems = items.stream().map(this::toBookItem).toList();
-
-      // 캐싱 TTL
 
       return new SearchBookResponse(response.total(), response.display(), mappedItems);
     } catch (RestClientException ex) {

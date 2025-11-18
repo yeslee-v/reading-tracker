@@ -14,6 +14,9 @@ import io.reading_tracker.response.UpdateUserBookResponse;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +32,7 @@ public class BookServiceImpl implements BookService {
   private final UserBookRepository userBookRepository;
 
   @Override
+  @Cacheable(cacheNames = "userBookList", key = "#userId + '::' + #stateFilter")
   public GetBookListResponse getBookList(Long userId, State stateFilter) {
     List<UserBook> userBooks =
         userBookRepository.findByUserIdAndState(userId, stateFilter, CREATED_AT_DESC);
@@ -64,6 +68,12 @@ public class BookServiceImpl implements BookService {
 
   @Override
   @Transactional
+  @Caching(
+      evict = {
+        @CacheEvict(cacheNames = "userBookList", key = "#user.id + '::IN_PROGRESS'"),
+        @CacheEvict(cacheNames = "userBookList", key = "#user.id + '::COMPLETED'"),
+        @CacheEvict(cacheNames = "userBookList", key = "#user.id + '::ARCHIVED'"),
+      })
   public AddUserBookResponse addBookToUserLibrary(User user, AddUserBookRequest request) {
     String title = request.title();
     String author = request.author();
@@ -104,6 +114,12 @@ public class BookServiceImpl implements BookService {
 
   @Override
   @Transactional
+  @Caching(
+      evict = {
+        @CacheEvict(cacheNames = "userBookList", key = "#user.id + '::IN_PROGRESS'"),
+        @CacheEvict(cacheNames = "userBookList", key = "#user.id + '::COMPLETED'"),
+        @CacheEvict(cacheNames = "userBookList", key = "#user.id + '::ARCHIVED'"),
+      })
   public UpdateUserBookResponse updateUserBookProgress(User user, UpdateUserBookRequest request) {
     Long userBookId = request.id();
 
