@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.reading_tracker.auth.PrincipalDetails;
 import io.reading_tracker.auth.PrincipalDetailsService;
+import io.reading_tracker.auth.jwt.JwtAuthenticationFilter;
 import io.reading_tracker.auth.oauth.CustomOAuth2UserService;
 import io.reading_tracker.auth.oauth.OAuth2LoginSuccessHandler;
 import io.reading_tracker.config.SecurityConfig;
@@ -28,11 +29,18 @@ import io.reading_tracker.response.SearchBookResponse;
 import io.reading_tracker.response.UpdateUserBookResponse;
 import io.reading_tracker.service.BookSearchService;
 import io.reading_tracker.service.BookService;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -497,5 +505,20 @@ class BookControllerTest {
     // then 400 Bad Request를 반환한다
     result.andExpect(status().isBadRequest());
     result.andExpect(jsonPath("$.code").value("BAD_REQUEST"));
+  }
+
+  @TestConfiguration
+  static class MockFilterConfig {
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+      return new JwtAuthenticationFilter(null, null) {
+        @Override
+        protected void doFilterInternal(
+            HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+          filterChain.doFilter(request, response);
+        }
+      };
+    }
   }
 }
