@@ -1,6 +1,7 @@
 package io.reading_tracker.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.reading_tracker.auth.jwt.JwtAuthenticationFilter;
 import io.reading_tracker.auth.oauth.CustomOAuth2UserService;
 import io.reading_tracker.auth.oauth.OAuth2LoginSuccessHandler;
 import io.reading_tracker.exception.ErrorResponse;
@@ -16,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder.SecretKeyFactoryAlgorithm;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -30,7 +32,8 @@ public class SecurityConfig {
       CorsConfigurationSource corsConfigurationSource,
       CustomOAuth2UserService customOAuth2UserService,
       OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
-      ObjectMapper objectMapper)
+      ObjectMapper objectMapper,
+      JwtAuthenticationFilter jwtAuthenticationFilter)
       throws Exception {
     http.cors(cors -> cors.configurationSource(corsConfigurationSource))
         .formLogin(login -> login.disable())
@@ -62,6 +65,7 @@ public class SecurityConfig {
                     .permitAll()
                     .anyRequest()
                     .authenticated())
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
         .oauth2Login(
             oauth2 ->
                 oauth2
