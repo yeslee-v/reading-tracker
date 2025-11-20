@@ -65,8 +65,7 @@ public class SecurityConfig {
             oauth2 ->
                 oauth2
                     .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-                    .successHandler(oAuth2LoginSuccessHandler)
-                    .defaultSuccessUrl("http://localhost:3000", true))
+                    .successHandler(oAuth2LoginSuccessHandler))
         .logout(logout -> logout.logoutSuccessUrl("http://localhost:3000").permitAll());
 
     return http.build();
