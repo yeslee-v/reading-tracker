@@ -1,5 +1,6 @@
 package io.reading_tracker.service;
 
+import io.reading_tracker.annotation.DistributedLock;
 import io.reading_tracker.domain.book.Book;
 import io.reading_tracker.domain.book.State;
 import io.reading_tracker.domain.user.User;
@@ -22,7 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class BookServiceImpl implements BookService {
 
@@ -74,6 +75,7 @@ public class BookServiceImpl implements BookService {
         @CacheEvict(cacheNames = "userBookList", key = "#user.id + '::COMPLETED'"),
         @CacheEvict(cacheNames = "userBookList", key = "#user.id + '::ARCHIVED'"),
       })
+  @DistributedLock(key = "'addBook:' + #user.id + ':' + #request.isbn")
   public AddUserBookResponse addBookToUserLibrary(User user, AddUserBookRequest request) {
     String title = request.title();
     String author = request.author();
