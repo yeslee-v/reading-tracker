@@ -59,8 +59,8 @@ public class User extends BaseEntity {
       throw new IllegalArgumentException("닉네임은 비어 있을 수 없습니다.");
     }
 
-    if (nickname.length() > 50) {
-      throw new IllegalArgumentException("닉네임의 길이는 50자 이하여야 합니다");
+    if (nickname.length() > 20) {
+      throw new IllegalArgumentException("닉네임의 길이는 20자 이하여야 합니다");
     }
 
     this.nickname = nickname;
