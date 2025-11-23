@@ -1,6 +1,7 @@
 package io.reading_tracker.auth.oauth;
 
 import io.reading_tracker.auth.PrincipalDetails;
+import io.reading_tracker.auth.jwt.JwtTokenProvider;
 import io.reading_tracker.domain.user.Auth;
 import io.reading_tracker.domain.user.User;
 import io.reading_tracker.repository.AuthRepository;
@@ -12,6 +13,8 @@ import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
@@ -30,6 +33,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
   private final RedisTemplate<String, String> redisTemplate;
   private final OAuth2AuthorizedClientService oAuth2AuthorizedClientService;
   private final PasswordEncoder passwordEncoder;
+  private final JwtTokenProvider jwtTokenProvider;
 
   @Override
   public void onAuthenticationSuccess(
@@ -86,6 +90,19 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
       log.info("Refresh Token DB 암호화 저장 완료: userId={}", user.getId());
     }
 
-    getRedirectStrategy().sendRedirect(request, response, "/");
+    String rtToken = jwtTokenProvider.createToken(user.getId());
+
+    ResponseCookie cookie =
+        ResponseCookie.from("rt_token", rtToken)
+            .path("/")
+            .sameSite("None")
+            .httpOnly(true)
+            .secure(true)
+            .maxAge(Duration.ofDays(7))
+            .build();
+
+    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+    getRedirectStrategy().sendRedirect(request, response, "http://localhost:3000");
   }
 }

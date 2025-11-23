@@ -22,5 +22,5 @@ spring:
 
 logging:
   level:
-    com.yourcompany.myproject: DEBUG
+    io.reading_tracker: DEBUG
     org.springframework.data.redis: DEBUG

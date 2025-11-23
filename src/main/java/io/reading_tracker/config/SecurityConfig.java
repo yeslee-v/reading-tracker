@@ -1,6 +1,7 @@
 package io.reading_tracker.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.reading_tracker.auth.jwt.JwtAuthenticationFilter;
 import io.reading_tracker.auth.oauth.CustomOAuth2UserService;
 import io.reading_tracker.auth.oauth.OAuth2LoginSuccessHandler;
 import io.reading_tracker.exception.ErrorResponse;
@@ -12,9 +13,11 @@ import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
+import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder.SecretKeyFactoryAlgorithm;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -29,7 +32,8 @@ public class SecurityConfig {
       CorsConfigurationSource corsConfigurationSource,
       CustomOAuth2UserService customOAuth2UserService,
       OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
-      ObjectMapper objectMapper)
+      ObjectMapper objectMapper,
+      JwtAuthenticationFilter jwtAuthenticationFilter)
       throws Exception {
     http.cors(cors -> cors.configurationSource(corsConfigurationSource))
         .formLogin(login -> login.disable())
@@ -42,6 +46,7 @@ public class SecurityConfig {
                     (request, response, authException) -> {
                       response.setStatus(HttpStatus.UNAUTHORIZED.value());
                       response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                      response.setCharacterEncoding("UTF-8");
 
                       ErrorResponse errorResponse = new ErrorResponse("UNAUTHORIZED", "로그인이 필요합니다");
                       response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
@@ -60,12 +65,12 @@ public class SecurityConfig {
                     .permitAll()
                     .anyRequest()
                     .authenticated())
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
         .oauth2Login(
             oauth2 ->
                 oauth2
                     .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-                    .successHandler(oAuth2LoginSuccessHandler)
-                    .defaultSuccessUrl("http://localhost:3000", true))
+                    .successHandler(oAuth2LoginSuccessHandler))
         .logout(logout -> logout.logoutSuccessUrl("http://localhost:3000").permitAll());
 
     return http.build();
@@ -73,7 +78,8 @@ public class SecurityConfig {
 
   @Bean
   public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
+    return new Pbkdf2PasswordEncoder(
+        "reading-tracker-secret", 16, 310000, SecretKeyFactoryAlgorithm.PBKDF2WithHmacSHA256);
   }
 
   @Bean
