@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/books")
@@ -37,9 +36,6 @@ public class BookController {
   public ResponseEntity<GetBookListResponse> getBookList(
       @AuthenticationPrincipal PrincipalDetails principalDetails,
       @RequestParam(name = "state", required = false) String state) {
-    if (principalDetails == null) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
-    }
 
     State stateFilter = state == null ? State.IN_PROGRESS : State.from(state);
 
@@ -53,9 +49,6 @@ public class BookController {
   public ResponseEntity<SearchBookResponse> searchBooks(
       @AuthenticationPrincipal PrincipalDetails principalDetails,
       @RequestParam(name = "query") String query) {
-    if (principalDetails == null) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
-    }
 
     String trimmedQuery = query == null ? "" : query.trim();
 
@@ -73,9 +66,6 @@ public class BookController {
   public ResponseEntity<AddUserBookResponse> addBook(
       @AuthenticationPrincipal PrincipalDetails principalDetails,
       @Valid @RequestBody AddUserBookRequest request) {
-    if (principalDetails == null) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다");
-    }
 
     AddUserBookResponse response =
         bookService.addBookToUserLibrary(principalDetails.getUser(), request);
@@ -87,9 +77,6 @@ public class BookController {
   public ResponseEntity<UpdateUserBookResponse> updateBook(
       @AuthenticationPrincipal PrincipalDetails principalDetails,
       @Valid @RequestBody UpdateUserBookRequest request) {
-    if (principalDetails == null) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다");
-    }
 
     UpdateUserBookResponse response =
         bookService.updateUserBookProgress(principalDetails.getUser(), request);
