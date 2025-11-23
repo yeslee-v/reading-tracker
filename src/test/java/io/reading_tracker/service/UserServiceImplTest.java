@@ -1,12 +1,12 @@
-package io.reading_tracker.domain.user;
+package io.reading_tracker.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
+import io.reading_tracker.domain.user.User;
 import io.reading_tracker.exception.UserNotFoundException;
 import io.reading_tracker.repository.UserRepository;
-import io.reading_tracker.service.UserServiceImpl;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
