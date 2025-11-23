@@ -1,14 +1,12 @@
 package io.reading_tracker.service;
 
-import io.reading_tracker.domain.user.User;
-import java.util.Optional;
+import io.reading_tracker.request.UpdateNicknameRequest;
+import io.reading_tracker.response.UpdateNicknameResponse;
+import io.reading_tracker.response.UserResponse;
 
 public interface UserService {
 
-  User getUserById(Long userId);
+  UserResponse getUserById(Long userId);
 
-  Optional<User> findUserByEmail(String email);
-
-  User updateNickname(Long userId, String nickname);
+  UpdateNicknameResponse updateNickname(Long userId, UpdateNicknameRequest request);
 }
-

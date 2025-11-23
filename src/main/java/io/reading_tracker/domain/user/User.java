@@ -10,7 +10,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.util.LinkedHashSet;
@@ -45,9 +44,6 @@ public class User extends BaseEntity {
   @Column(nullable = false, length = 255)
   private String email;
 
-  @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
-  private Auth auth;
-
   public User(String nickname, String email) {
     this.nickname = nickname;
     this.email = email;
@@ -58,9 +54,13 @@ public class User extends BaseEntity {
     this.email = email;
   }
 
-  public void changeNickname(String nickname) {
+  public void updateNickname(String nickname) {
     if (nickname == null || nickname.isBlank()) {
       throw new IllegalArgumentException("닉네임은 비어 있을 수 없습니다.");
+    }
+
+    if (nickname.length() > 50) {
+      throw new IllegalArgumentException("닉네임의 길이는 50자 이하여야 합니다");
     }
 
     this.nickname = nickname;
