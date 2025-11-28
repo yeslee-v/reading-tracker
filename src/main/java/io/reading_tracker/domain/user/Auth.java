@@ -1,7 +1,9 @@
 package io.reading_tracker.domain.user;
 
 import io.reading_tracker.domain.BaseEntity;
+import io.reading_tracker.util.StringCryptoConverter;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -45,6 +47,7 @@ public class Auth extends BaseEntity {
   @Column(name = "provider_id", nullable = false, length = 100)
   private String providerId;
 
+  @Convert(converter = StringCryptoConverter.class)
   @Column(name = "refresh_token", columnDefinition = "TEXT")
   private String refreshToken;
 
