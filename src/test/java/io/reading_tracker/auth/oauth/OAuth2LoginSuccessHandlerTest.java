@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -57,7 +56,6 @@ class OAuth2LoginSuccessHandlerTest {
   @Autowired private AuthRepository authRepository;
   @Autowired private UserRepository userRepository;
   @Autowired private RedisTemplate<String, String> redisTemplate;
-  @Autowired private PasswordEncoder passwordEncoder;
 
   @DynamicPropertySource
   private static void setRedisProperties(DynamicPropertyRegistry registry) {
@@ -122,7 +120,7 @@ class OAuth2LoginSuccessHandlerTest {
     assertThat(updatedAuth.getRefreshToken()).isNotNull();
     assertThat(updatedAuth.getExpiredAt()).isEqualTo(refreshTokenExpiresAt);
 
-    assertThat(passwordEncoder.matches(newRefreshToken, updatedAuth.getRefreshToken())).isTrue();
+    assertThat(updatedAuth.getRefreshToken()).isEqualTo(newRefreshToken);
   }
 
   private Authentication createMockAuthentication(Long userId) {

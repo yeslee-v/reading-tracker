@@ -16,7 +16,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -32,7 +31,6 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
   private final AuthRepository authRepository;
   private final RedisTemplate<String, String> redisTemplate;
   private final OAuth2AuthorizedClientService oAuth2AuthorizedClientService;
-  private final PasswordEncoder passwordEncoder;
   private final JwtTokenProvider jwtTokenProvider;
 
   @Override
@@ -84,8 +82,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         log.error("저장된 Refresh Token 없음: userId={}", user.getId());
       }
     } else {
-      String encryptedRefreshToken = passwordEncoder.encode(refreshToken);
-      auth.updateRefreshToken(encryptedRefreshToken, refreshExpiresAt);
+      auth.updateRefreshToken(refreshToken, refreshExpiresAt);
       authRepository.save(auth);
       log.info("Refresh Token DB 암호화 저장 완료: userId={}", user.getId());
     }

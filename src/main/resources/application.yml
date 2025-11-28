@@ -42,3 +42,6 @@ spring:
 jwt:
   secret-key: ${JWT_SECRET_KEY}
   expiration-time: 604800000 # 7days
+
+encrypt:
+  secret-key: ${AES_SECRET_KEY}
