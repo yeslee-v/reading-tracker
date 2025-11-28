@@ -5,6 +5,7 @@ import io.reading_tracker.domain.book.Book;
 import io.reading_tracker.domain.book.State;
 import io.reading_tracker.domain.user.User;
 import io.reading_tracker.domain.userbook.UserBook;
+import io.reading_tracker.exception.NotOwnerException;
 import io.reading_tracker.repository.BookRepository;
 import io.reading_tracker.repository.UserBookRepository;
 import io.reading_tracker.request.AddUserBookRequest;
@@ -129,6 +130,10 @@ public class BookServiceImpl implements BookService {
         userBookRepository
             .findById(userBookId)
             .orElseThrow(() -> new IllegalStateException("해당 도서는 사용자 목록 내 존재하지 않습니다."));
+
+    if (!user.getId().equals(userBook.getUser().getId())) {
+      throw new NotOwnerException("해당 유저는 도서 소유자가 아닙니다.");
+    }
 
     Integer currentPage = request.currentPage();
 
