@@ -19,6 +19,7 @@ import io.reading_tracker.auth.oauth.OAuth2LoginSuccessHandler;
 import io.reading_tracker.config.SecurityConfig;
 import io.reading_tracker.domain.book.State;
 import io.reading_tracker.domain.user.User;
+import io.reading_tracker.exception.NotOwnerException;
 import io.reading_tracker.request.AddUserBookRequest;
 import io.reading_tracker.request.UpdateUserBookRequest;
 import io.reading_tracker.response.AddUserBookResponse;
@@ -475,6 +476,34 @@ class BookControllerTest {
     // then 401 Unauthorized를 반환한다
     result.andExpect(status().isUnauthorized());
     result.andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
+  }
+
+  @Test
+  @DisplayName("PATCH /api/books: 내가 아닌 다른 유저가 도서를 수정하면 403 Forbidden을 반환한다")
+  void updateBook_withNotOwner_return401Unauthorized() throws Exception {
+    // given 내가 아닌 다른 유저가
+    User fakeUser = new User("tester", "test@email.com");
+    ReflectionTestUtils.setField(fakeUser, "id", 1L);
+
+    UserDetails fakePrincipal = new PrincipalDetails(fakeUser);
+
+    State targetState = State.COMPLETED;
+    UpdateUserBookRequest fakeRequest = new UpdateUserBookRequest(1L, null, targetState);
+
+    given(bookService.updateUserBookProgress(any(User.class), any(UpdateUserBookRequest.class)))
+        .willThrow(new NotOwnerException("해당 유저는 도서 소유자가 아닙니다."));
+
+    // when updateBook을 호출하면
+    ResultActions result =
+        mockMvc.perform(
+            patch("/api/books")
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(user(fakePrincipal))
+                .content(objectMapper.writeValueAsString(fakeRequest)));
+
+    // then 403 Forbidden를 반환한다
+    result.andExpect(status().isForbidden());
+    result.andExpect(jsonPath("$.code").value("FORBIDDEN"));
   }
 
   @Test

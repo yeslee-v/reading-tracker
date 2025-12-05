@@ -1,5 +1,6 @@
 package io.reading_tracker.controller;
 
+import io.reading_tracker.auth.PrincipalDetails;
 import io.reading_tracker.response.UserInfoResponse;
 import java.util.Map;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,12 +19,29 @@ public class AuthController {
       return UserInfoResponse.unauthenticated();
     }
 
-    Map<String, Object> attributes = oAuth2User.getAttributes();
-    Map<String, Object> naverResponse = (Map<String, Object>) attributes.get("response");
+    PrincipalDetails principalDetails = (PrincipalDetails) oAuth2User;
 
-    if (naverResponse == null) {
+    /// JWT 로그인
+    if (principalDetails.getAttributes() == null
+        || principalDetails.getAttributes().get("response") == null) {
+      String userId = String.valueOf(principalDetails.getUserId());
+      String email = principalDetails.getEmail();
+      String username = principalDetails.getUsername();
+
+      return UserInfoResponse.of(userId, email, username, "local");
+    }
+
+    Map<String, Object> attributes = oAuth2User.getAttributes();
+
+    /// unchecked cast 방어
+    Object responseObj = attributes.get("response");
+
+    if (!(responseObj instanceof Map<?, ?>)) {
       return UserInfoResponse.unauthenticated();
     }
+
+    @SuppressWarnings("unchecked")
+    Map<String, Object> naverResponse = (Map<String, Object>) responseObj;
 
     String id = (String) naverResponse.get("id");
     String email = (String) naverResponse.get("email");

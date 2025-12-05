@@ -48,6 +48,13 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(errorResponse, e.getStatusCode());
   }
 
+  @ExceptionHandler(NotOwnerException.class)
+  public ResponseEntity<Object> handleNotOwnerException(NotOwnerException e) {
+    log.warn("403 Forbidden: {}", e.getMessage());
+    ErrorResponse errorResponse = new ErrorResponse(HttpStatus.FORBIDDEN.name(), e.getMessage());
+    return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+  }
+
   @ExceptionHandler(Exception.class)
   public ResponseEntity<Object> handleException(Exception e) {
     log.error("500 Internal Server Error: ", e);

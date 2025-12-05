@@ -7,6 +7,7 @@ import io.reading_tracker.domain.book.Book;
 import io.reading_tracker.domain.book.State;
 import io.reading_tracker.domain.user.User;
 import io.reading_tracker.domain.userbook.UserBook;
+import io.reading_tracker.exception.NotOwnerException;
 import io.reading_tracker.repository.BookRepository;
 import io.reading_tracker.repository.UserBookRepository;
 import io.reading_tracker.repository.UserRepository;
@@ -139,7 +140,7 @@ class BookServiceTest {
 
   @Test
   @DisplayName("이미 추가된 도서는 사용자의 도서 목록에 재추가할 수 없다")
-  void addAlreadyExistBook_throwsError() {
+  void addBook_withAlreadyExistBook_throwsError() {
     // given 이미 도서 목록(UserBookByUserId)에 있는 책을
     AddUserBookRequest request =
         new AddUserBookRequest("1234567890123", "테스트 도서", "테스트 저자", "테스트 출판사", 300);
@@ -434,6 +435,26 @@ class BookServiceTest {
     assertThatThrownBy(() -> bookService.updateUserBookProgress(user, updatedRequest))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("해당 도서는 사용자 목록 내 존재하지 않습니다.");
+  }
+
+  @Test
+  @DisplayName("자신이 소유하지 않은 도서는 업데이트할 수 없다")
+  void updateBook_withNotOwner_ThrowsError() {
+    // given 자신이 소유하지 않은 도서를
+    UserBook userBook = givenInitialUserBook();
+    State state = userBook.getState();
+
+    User invalidUser = userRepository.save(new User("hacker", "hacker@email.com"));
+
+    // when 업데이트하면
+    Integer targetCurrentPage = 301;
+    UpdateUserBookRequest updatedRequest =
+        new UpdateUserBookRequest(userBook.getId(), targetCurrentPage, state);
+
+    // then 해당 유저는 도서 소유자가 아닙니다라는 에러를 반환한다
+    assertThatThrownBy(() -> bookService.updateUserBookProgress(invalidUser, updatedRequest))
+        .isInstanceOf(NotOwnerException.class)
+        .hasMessageContaining("해당 유저는 도서 소유자가 아닙니다.");
   }
 
   private UserBook givenInitialUserBook() {
