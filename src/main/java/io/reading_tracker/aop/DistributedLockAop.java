@@ -52,7 +52,8 @@ public class DistributedLockAop {
 
       return joinPoint.proceed();
     } catch (InterruptedException e) {
-      throw new InterruptedException();
+      Thread.currentThread().interrupt();
+      throw new IllegalStateException("Redisson 락 획득 중 인터럽트 발생: ", e);
     } finally {
       try {
         if (rLock.isHeldByCurrentThread()) {
