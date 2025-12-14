@@ -68,10 +68,17 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     String redisKey = "at:" + user.getId();
     Duration atTtl = Duration.between(Instant.now(), accessExpiresAt);
 
-    redisTemplate.opsForValue().set(redisKey, accessToken, atTtl);
+    try {
+      redisTemplate.opsForValue().set(redisKey, accessToken, atTtl);
 
-    log.info("Redis에 Access Token 저장: key={}, ttl={}", redisKey, atTtl.toSeconds());
+      log.info("Redis에 Access Token 저장: key={}, ttl={}", redisKey, atTtl.toSeconds());
+    } catch (Exception e) {
+      // access token을 db에 임시 백업하면 코드 관리가 어려워지므로  로그만 남기기
+      log.error(
+          "Redis 장애 발생 - OAuth Access Token 저장 실패: key={}, error={}", redisKey, e.getMessage());
+    }
 
+    // 로그인 진행
     Auth auth =
         authRepository
             .findByUserId(user.getId())
