@@ -40,6 +40,18 @@ public class DistributedLockAop {
 
     RLock rLock = redissonClient.getLock(key);
 
+    boolean isLocked = tryToLock(rLock, distributedLock, key);
+
+    try {
+      return joinPoint.proceed();
+    } finally {
+      if (isLocked) {
+        safeUnlock(rLock, key);
+      }
+    }
+  }
+
+  private boolean tryToLock(RLock rLock, DistributedLock distributedLock, String key) {
     try {
       boolean available =
           rLock.tryLock(
@@ -50,17 +62,28 @@ public class DistributedLockAop {
         throw new IllegalArgumentException("현재 처리 중인 요청으로 잠시 후 다시 시도하세요");
       }
 
-      return joinPoint.proceed();
+      return true;
     } catch (InterruptedException e) {
-      throw new InterruptedException();
-    } finally {
-      try {
-        if (rLock.isHeldByCurrentThread()) {
-          rLock.unlock();
-        }
-      } catch (IllegalMonitorStateException e) {
-        log.info("이미 Redisson 락은 해제되었습니다");
+      Thread.currentThread().interrupt();
+      throw new IllegalStateException("Redisson 락 획득 중 인터럽트 발생: ", e);
+    } catch (IllegalArgumentException e) {
+      throw e;
+    } catch (Exception e) {
+      log.error("Redis 분산락 획득 실패. key: {}, error: {}", key, e.getMessage());
+
+      return false;
+    }
+  }
+
+  private void safeUnlock(RLock rLock, String key) {
+    try {
+      if (rLock.isHeldByCurrentThread()) {
+        rLock.unlock();
       }
+    } catch (IllegalMonitorStateException e) {
+      log.info("락이 이미 해제되었습니다. key: {}", key);
+    } catch (Exception e) {
+      log.warn("락 해제 중 오류가 발생했습니다. key: {}, error: {}", key, e.getMessage());
     }
   }
 }
