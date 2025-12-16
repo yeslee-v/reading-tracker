@@ -111,7 +111,7 @@ jobs:
       - name: AWS SSM Run Command
         run: |
           aws ssm send-command \
-          --instance-ids "i-0358680d268174b39" \
+          --instance-ids "i-02784bb8bd37b437a" \
           --document-name "AWS-RunShellScript" \
-          --parameters '{"commands":["cd /home/ssm-user","./run_app.sh"]}' \
+          --parameters '{"commands":["cd /home/ssm-user","./deploy.sh"]}' \
           --region "ap-northeast-2"
