@@ -48,8 +48,6 @@ public class BookServiceImpl implements BookService {
             toCount(userBookRepository.countByUserIdAndState(userId, State.COMPLETED)),
             toCount(userBookRepository.countByUserIdAndState(userId, State.ARCHIVED)));
 
-    // 캐싱
-
     return new GetBookListResponse(summary, bookItems);
   }
 

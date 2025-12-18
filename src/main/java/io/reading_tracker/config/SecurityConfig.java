@@ -52,6 +52,11 @@ public class SecurityConfig {
             auth ->
                 auth.requestMatchers(
                         "/",
+                        "/index.html",
+                        "/css/**",
+                        "/js/**",
+                        "/img/**",
+                        "/favicon.ico",
                         "/login",
                         "/error",
                         "/actuator/health",
@@ -68,7 +73,7 @@ public class SecurityConfig {
                 oauth2
                     .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                     .successHandler(oAuth2LoginSuccessHandler))
-        .logout(logout -> logout.logoutSuccessUrl("http://localhost:3000").permitAll());
+        .logout(logout -> logout.logoutSuccessUrl("http://localhost:8080").permitAll());
 
     return http.build();
   }
