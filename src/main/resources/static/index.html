@@ -54,7 +54,7 @@
     <section class="panel">
       <div class="panel-title">
         <h2>내 서재</h2>
-        <button class="button primary" id="addBookBtn">도서 추가</button>
+        <button class="button secondary button--compact" id="addBookBtn" type="button">도서 추가</button>
       </div>
       <div class="book-list" id="bookList"></div>
       <div class="empty-state hidden" id="emptyState">
@@ -67,27 +67,36 @@
 <div class="modal hidden" id="addBookModal">
   <div class="modal-content">
     <header>
-      <h3>도서 추가</h3>
+      <h3>도서 추가 📚</h3>
       <button class="icon-button" id="closeAddModalBtn">✕</button>
     </header>
     <div class="modal-body">
-      <section class="search-box">
-        <label for="searchInput">네이버 도서 검색</label>
-        <div class="search-input-row">
-          <input id="searchInput" placeholder="도서명 또는 저자를 입력하세요" type="text"/>
-          <button class="button secondary" id="searchBtn">검색</button>
+      <section class="search-book-section">
+        <div class="section-heading">
+          <h4>도서 검색</h4>
+          <h4>선택한 도서</h4>
         </div>
-        <div class="search-results" id="searchResults"></div>
-      </section>
-
-      <section class="selected-book">
-        <h4>선택한 도서</h4>
-        <div class="selected-book-details empty" id="selectedBookDetails">
-          <p>검색 결과에서 추가할 도서를 선택하세요.</p>
+        <div class="search-book-columns">
+          <div class="search-box">
+            <div class="search-input-row">
+              <input id="searchInput" placeholder="도서명 또는 저자를 입력하세요" type="text"/>
+              <button class="button secondary" id="searchBtn">검색</button>
+            </div>
+            <div class="search-results" id="searchResults"></div>
+          </div>
+          <div class="selected-book">
+            <div class="selected-book-details empty" id="selectedBookDetails">
+              <p class="selected-book-placeholder">검색 결과에서 추가할 도서를 선택하세요.</p>
+            </div>
+            <div class="selected-book-input">
+              <label for="totalPagesInput"><b>총 페이지</b></label>
+              <div class="search-input-row">
+                <input id="totalPagesInput" min="1" placeholder="예: 320" type="number"/>
+              </div>
+            </div>
+            <button class="button primary" disabled id="submitAddBookBtn">내 서재에 추가</button>
+          </div>
         </div>
-        <label for="totalPagesInput">총 페이지</label>
-        <input id="totalPagesInput" min="1" placeholder="예: 320" type="number"/>
-        <button class="button primary" disabled id="submitAddBookBtn">내 서재에 추가</button>
       </section>
     </div>
   </div>

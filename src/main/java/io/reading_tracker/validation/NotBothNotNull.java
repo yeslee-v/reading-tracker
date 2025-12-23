@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NotBothNotNull {
-  String message() default "Only one of the fields may be provided.";
+  String message() default "현재 페이지와 상태 중 하나만 수정할 수 있습니다.";
 
   Class<?>[] groups() default {};
 

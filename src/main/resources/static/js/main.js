@@ -236,7 +236,7 @@ function renderBookList(books = []) {
           <h3>${safeTitle}</h3>
           <div class="book-meta">${safeMeta}</div>
         </div>
-        <button class="button secondary" data-action="open-edit">수정</button>
+        <button class="button secondary button--compact" data-action="open-edit">수정</button>
       </div>
       <div class="book-progress">
         <div class="progress-bar"><span style="width: ${book.progress}%"></span></div>
@@ -360,7 +360,7 @@ async function handleEditSubmit() {
     await loadBooks();
   } catch (error) {
     console.error(error);
-    showToast('도서 정보를 수정하지 못했습니다.', 'error');
+    showToast(error.message ?? '도서 정보를 수정하지 못했습니다.', 'error');
   }
 }
 
@@ -436,7 +436,6 @@ function updateSelectedBookDetails() {
   elements.selectedBookDetails.innerHTML = `
     <strong>${safeTitle}</strong>
     <div>${safeMeta}</div>
-    <small>ISBN: ${escapeHtml(selectedBook.isbn ?? '정보 없음')}</small>
     <a href="${bookLink}" target="_blank" rel="noopener">자세히 보기</a>
   `;
 }

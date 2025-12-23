@@ -306,6 +306,10 @@ label {
   align-items: center;
 }
 
+.modal-content header h3 {
+  margin: 0;
+}
+
 .icon-button {
   background: transparent;
   border: none;
@@ -315,8 +319,8 @@ label {
 }
 
 .modal-body {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 1.5rem;
 }
 
@@ -369,6 +373,22 @@ label {
   overflow-y: auto;
 }
 
+.search-book-section .search-book-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.section-heading {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.section-heading h4 {
+  margin: 0;
+}
+
 .search-result-item {
   padding: 0.75rem;
   border-radius: 0.75rem;
@@ -385,6 +405,12 @@ label {
 .search-input-row {
   display: flex;
   gap: 0.5rem;
+}
+
+.search-book-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .search-input-row input {
@@ -411,10 +437,26 @@ label {
   color: var(--text-muted);
 }
 
+.selected-book-placeholder {
+  text-align: center;
+  margin: 0;
+}
+
 .selected-book {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+}
+
+.selected-book h4 {
+  margin: 0;
+}
+
+.selected-book-input {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 1rem;
 }
 
 .toast {
@@ -426,6 +468,7 @@ label {
   border-radius: 0.75rem;
   border: 1px solid var(--border);
   box-shadow: 0 15px 30px rgba(15, 23, 42, 0.12);
+  z-index: 40;
 }
 
 .toast.success {
@@ -492,4 +535,9 @@ label {
   width: 100%;
   height: auto;
   display: block;
+}
+
+
+.button--compact {
+  padding: 0.4rem 0.9rem;
 }
