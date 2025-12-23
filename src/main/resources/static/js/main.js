@@ -6,7 +6,6 @@ const STATE_LABELS = {
 
 const elements = {
   userInfo: document.getElementById('userInfo'),
-  userActions: document.getElementById('userActions'),
   unauthenticated: document.getElementById('unauthenticated'),
   appContent: document.getElementById('appContent'),
   bookList: document.getElementById('bookList'),
@@ -15,13 +14,12 @@ const elements = {
   summaryInProgress: document.getElementById('summaryInProgress'),
   summaryCompleted: document.getElementById('summaryCompleted'),
   summaryArchived: document.getElementById('summaryArchived'),
-  stateButtons: Array.from(document.querySelectorAll('[data-role="state-button"]')),
+  stateButtons: Array.from(
+      document.querySelectorAll('[data-role="state-button"]')),
   addModal: document.getElementById('addBookModal'),
   closeAddModalBtn: document.getElementById('closeAddModalBtn'),
   editModal: document.getElementById('editBookModal'),
   closeEditModalBtn: document.getElementById('closeEditModalBtn'),
-  nicknameModal: document.getElementById('nicknameModal'),
-  closeNicknameModalBtn: document.getElementById('closeNicknameModalBtn'),
   searchInput: document.getElementById('searchInput'),
   searchBtn: document.getElementById('searchBtn'),
   searchResults: document.getElementById('searchResults'),
@@ -32,8 +30,6 @@ const elements = {
   editCurrentPageInput: document.getElementById('editCurrentPageInput'),
   editStateSelect: document.getElementById('editStateSelect'),
   submitEditBookBtn: document.getElementById('submitEditBookBtn'),
-  nicknameInput: document.getElementById('nicknameInput'),
-  submitNicknameBtn: document.getElementById('submitNicknameBtn'),
   toast: document.getElementById('toast'),
 };
 
@@ -44,7 +40,6 @@ let isLoadingBooks = false;
 let searchResultsCache = [];
 let editingBook = null;
 let editInitialValues = null;
-let pendingNickname = '';
 const bookCache = new Map();
 
 init();
@@ -80,12 +75,6 @@ function bindEvents() {
       closeEditModal();
     }
   });
-  elements.closeNicknameModalBtn.addEventListener('click', closeNicknameModal);
-  elements.nicknameModal.addEventListener('click', (event) => {
-    if (event.target === elements.nicknameModal) {
-      closeNicknameModal();
-    }
-  });
 
   elements.searchBtn.addEventListener('click', handleSearch);
   elements.searchInput.addEventListener('keydown', (event) => {
@@ -96,12 +85,12 @@ function bindEvents() {
   });
 
   elements.submitAddBookBtn.addEventListener('click', handleAddBookSubmit);
-  elements.totalPagesInput.addEventListener('input', updateAddSubmitButtonState);
-  elements.editCurrentPageInput.addEventListener('input', handleEditInputsChange);
+  elements.totalPagesInput.addEventListener('input',
+      updateAddSubmitButtonState);
+  elements.editCurrentPageInput.addEventListener('input',
+      handleEditInputsChange);
   elements.editStateSelect.addEventListener('change', handleEditInputsChange);
   elements.submitEditBookBtn.addEventListener('click', handleEditSubmit);
-  elements.nicknameInput.addEventListener('input', handleNicknameInput);
-  elements.submitNicknameBtn.addEventListener('click', handleNicknameSubmit);
 
   elements.searchResults.addEventListener('click', (event) => {
     const item = event.target.closest('.search-result-item');
@@ -139,7 +128,6 @@ function bindEvents() {
     if (event.key === 'Escape') {
       closeAddBookModal();
       closeEditModal();
-      closeNicknameModal();
     }
   });
 
@@ -151,19 +139,21 @@ function populateStateSelect(selectElement) {
     return;
   }
   selectElement.innerHTML = Object.entries(STATE_LABELS)
-    .map(([value, label]) => `<option value="${value}">${label}</option>`)
-    .join('');
+  .map(([value, label]) => `<option value="${value}">${label}</option>`)
+  .join('');
 }
 
 async function loadCurrentUser() {
   try {
     const response = await apiRequest('/api/auth/user');
+    // TODO: /api/users/me를 호출하도록 변경해 DB 기준 최신 닉네임과 정보를 사용한다.
     if (!response || !response.authenticated) {
       showUnauthenticated();
       return;
     }
 
     currentUser = response;
+    console.log(currentUser);
     renderUserPanel();
     showApp();
     await loadBooks();
@@ -176,22 +166,6 @@ async function loadCurrentUser() {
 function renderUserPanel() {
   const nickname = currentUser.nickname ?? '사용자';
   elements.userInfo.innerHTML = `<strong>${nickname}</strong>`;
-
-  elements.userActions.innerHTML = '';
-
-  const nicknameButton = document.createElement('button');
-  nicknameButton.className = 'button secondary';
-  nicknameButton.textContent = '닉네임 변경';
-  nicknameButton.addEventListener('click', () => {
-    openNicknameModal(nickname);
-  });
-
-  const logoutLink = document.createElement('a');
-  logoutLink.className = 'button secondary';
-  logoutLink.textContent = '로그아웃';
-  logoutLink.href = '/logout';
-
-  elements.userActions.append(nicknameButton, logoutLink);
 }
 
 function showUnauthenticated() {
@@ -266,7 +240,8 @@ function renderBookList(books = []) {
       </div>
       <div class="book-progress">
         <div class="progress-bar"><span style="width: ${book.progress}%"></span></div>
-        <div class="progress-info">${book.currentPage ?? 0} / ${book.totalPages ?? '-'}쪽 (${book.progress}%)</div>
+        <div class="progress-info">${book.currentPage ?? 0} / ${book.totalPages
+    ?? '-'}쪽 (${book.progress}%)</div>
       </div>
     `;
 
@@ -280,7 +255,8 @@ function openEditModal(book) {
   editingBook = book;
   editInitialValues = {
     currentPage:
-      Number.isFinite(book.currentPage) && book.currentPage > 0 ? book.currentPage : null,
+        Number.isFinite(book.currentPage) && book.currentPage > 0
+            ? book.currentPage : null,
     state: book.state,
   };
 
@@ -297,28 +273,12 @@ function openEditModal(book) {
   elements.editCurrentPageInput.value = nextPageValue;
   elements.editCurrentPageInput.max = book.totalPages ?? '';
   elements.editCurrentPageInput.placeholder = book.totalPages
-    ? `1 ~ ${book.totalPages}쪽`
-    : '현재 페이지를 입력';
+      ? `1 ~ ${book.totalPages}쪽`
+      : '현재 페이지를 입력';
   elements.editStateSelect.value = book.state;
   elements.editModal.classList.remove('hidden');
   updateEditSubmitButtonState();
   elements.editCurrentPageInput.focus();
-}
-
-function openNicknameModal(currentNickname) {
-  pendingNickname = currentNickname ?? '';
-  elements.nicknameInput.value = pendingNickname;
-  updateNicknameSubmitState();
-  elements.nicknameModal.classList.remove('hidden');
-  elements.nicknameInput.focus();
-  elements.nicknameInput.select();
-}
-
-function closeNicknameModal() {
-  elements.nicknameModal.classList.add('hidden');
-  elements.nicknameInput.value = '';
-  pendingNickname = '';
-  elements.submitNicknameBtn.disabled = true;
 }
 
 function closeEditModal() {
@@ -337,11 +297,6 @@ function handleEditInputsChange() {
   updateEditSubmitButtonState();
 }
 
-function handleNicknameInput() {
-  pendingNickname = elements.nicknameInput.value;
-  updateNicknameSubmitState();
-}
-
 function updateEditSubmitButtonState() {
   if (!editingBook || !editInitialValues) {
     elements.submitEditBookBtn.disabled = true;
@@ -358,7 +313,8 @@ function updateEditSubmitButtonState() {
   }
 
   const hasPageChanged =
-    hasPageInput && isPageValid && pageNumber !== editInitialValues.currentPage;
+      hasPageInput && isPageValid && pageNumber
+      !== editInitialValues.currentPage;
   const stateValue = elements.editStateSelect.value;
   const hasStateChanged = stateValue !== editInitialValues.state;
   const hasChanges = (hasPageChanged || hasStateChanged) && isPageValid;
@@ -382,7 +338,7 @@ async function handleEditSubmit() {
   }
 
   const stateValue = elements.editStateSelect.value;
-  const payload = { id: editingBook.id };
+  const payload = {id: editingBook.id};
   if (hasPageInput && pageNumber !== editInitialValues.currentPage) {
     payload.currentPage = pageNumber;
   }
@@ -408,42 +364,6 @@ async function handleEditSubmit() {
   }
 }
 
-async function updateNickname(nickname) {
-  try {
-    await apiRequest('/api/users/me/nickname', {
-      method: 'PATCH',
-      body: { nickname },
-    });
-    showToast('닉네임이 변경되었습니다.', 'success');
-    if (currentUser) {
-      currentUser.nickname = nickname;
-      renderUserPanel();
-    }
-  } catch (error) {
-    console.error(error);
-    showToast('닉네임 변경에 실패했습니다.', 'error');
-    closeNicknameModal();
-  }
-}
-
-function updateNicknameSubmitState() {
-  const value = elements.nicknameInput.value.trim();
-  const isValid = value.length > 0 && value.length <= 20;
-  const isChanged = currentUser?.nickname !== value;
-  elements.submitNicknameBtn.disabled = !(isValid && isChanged);
-}
-
-async function handleNicknameSubmit() {
-  const value = elements.nicknameInput.value.trim();
-  if (!value || value.length > 20) {
-    showToast('1~20자 닉네임을 입력하세요.', 'error');
-    return;
-  }
-
-  await updateNickname(value);
-  closeNicknameModal();
-}
-
 async function handleSearch() {
   const keyword = elements.searchInput.value.trim();
   if (!keyword) {
@@ -457,7 +377,8 @@ async function handleSearch() {
   updateAddSubmitButtonState();
 
   try {
-    const response = await apiRequest(`/api/books/search?query=${encodeURIComponent(keyword)}`);
+    const response = await apiRequest(
+        `/api/books/search?query=${encodeURIComponent(keyword)}`);
     searchResultsCache = response.items ?? [];
     renderSearchResults();
   } catch (error) {
@@ -480,7 +401,8 @@ function renderSearchResults() {
     div.dataset.index = index;
     div.innerHTML = `
       <strong>${escapeHtml(item.title)}</strong>
-      <div class="book-meta">${escapeHtml(formatBookMeta(item.author, item.publisher))}</div>
+      <div class="book-meta">${escapeHtml(
+        formatBookMeta(item.author, item.publisher))}</div>
     `;
     fragment.appendChild(div);
   });
@@ -491,9 +413,10 @@ function renderSearchResults() {
 
 function selectSearchResult(book, element) {
   selectedBook = book;
-  elements.searchResults.querySelectorAll('.search-result-item').forEach((item) => {
-    item.classList.toggle('active', item === element);
-  });
+  elements.searchResults.querySelectorAll('.search-result-item').forEach(
+      (item) => {
+        item.classList.toggle('active', item === element);
+      });
   updateSelectedBookDetails();
   updateAddSubmitButtonState();
 }
@@ -507,7 +430,8 @@ function updateSelectedBookDetails() {
 
   elements.selectedBookDetails.classList.remove('empty');
   const safeTitle = escapeHtml(selectedBook.title);
-  const safeMeta = escapeHtml(formatBookMeta(selectedBook.author, selectedBook.publisher));
+  const safeMeta = escapeHtml(
+      formatBookMeta(selectedBook.author, selectedBook.publisher));
   const bookLink = selectedBook.link ? encodeURI(selectedBook.link) : '#';
   elements.selectedBookDetails.innerHTML = `
     <strong>${safeTitle}</strong>
@@ -567,7 +491,7 @@ function closeAddBookModal() {
   updateAddSubmitButtonState();
 }
 
-async function apiRequest(url, { method = 'GET', body } = {}) {
+async function apiRequest(url, {method = 'GET', body} = {}) {
   const options = {
     method,
     credentials: 'include',
@@ -626,9 +550,9 @@ function formatBookMeta(author, publisher) {
 
 function escapeHtml(value = '') {
   return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
 }

@@ -56,14 +56,14 @@ public class SecurityConfig {
                         "/css/**",
                         "/js/**",
                         "/img/**",
+                        "/assets/**",
                         "/favicon.ico",
                         "/login",
                         "/error",
                         "/actuator/health",
                         "/api/auth/**",
                         "/oauth2/**",
-                        "/login/oauth2/**",
-                        "/test.html")
+                        "/login/oauth2/**")
                     .permitAll()
                     .anyRequest()
                     .authenticated())
