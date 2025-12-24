@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Reading Tracker</title>
+  <link href="/css/styles.css" rel="stylesheet"/>
+  <link href="/assets/rt-favicon.svg" rel="icon" type="image/svg+xml"/>
+</head>
+<body>
+<header class="app-header">
+  <div class="logo">
+    <img alt="Reading Tracker" src="/assets/rt-simple-logo.svg"/>
+  </div>
+  <div class="user-panel" id="userPanel">
+    <div class="user-info" id="userInfo"></div>
+  </div>
+</header>
+
+<main class="container">
+  <section class="panel hidden" id="unauthenticated">
+    <p class="unauthenticated-slogan">읽다 덮어 둔 종이책들, 어디까지 읽었는지 기억하시나요?</p>
+    <a aria-label="네이버로 로그인" href="/oauth2/authorization/naver">
+      <img alt="네이버 로그인" class="naver-login-img" src="/assets/naver-login-bi.svg"/>
+    </a>
+  </section>
+
+  <section class="hidden" id="appContent">
+    <section class="panel summary-panel">
+      <div class="panel-title">
+        <h2>나의 독서 현황</h2>
+      </div>
+      <div class="summary-grid" id="stateSummary">
+        <button
+            class="summary-card active"
+            data-role="state-button"
+            data-state="IN_PROGRESS"
+            type="button"
+        >
+          <span>읽는 중</span>
+          <strong id="summaryInProgress">0</strong>
+        </button>
+        <button class="summary-card" data-role="state-button" data-state="COMPLETED" type="button">
+          <span>완독</span>
+          <strong id="summaryCompleted">0</strong>
+        </button>
+        <button class="summary-card" data-role="state-button" data-state="ARCHIVED" type="button">
+          <span>보관</span>
+          <strong id="summaryArchived">0</strong>
+        </button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title">
+        <h2>내 서재</h2>
+        <button class="button secondary button--compact" id="addBookBtn" type="button">
+          <span>도서 추가</span>
+        </button>
+      </div>
+      <div class="book-list" id="bookList"></div>
+      <div class="empty-state hidden" id="emptyState">
+        <p>해당 상태의 도서가 없습니다.</p>
+      </div>
+    </section>
+  </section>
+</main>
+
+<div class="modal hidden" id="addBookModal">
+  <div class="modal-content">
+    <header>
+      <h3>도서 추가</h3>
+      <button class="icon-button" id="closeAddModalBtn">✕</button>
+    </header>
+    <div class="modal-body">
+      <section class="search-book-section">
+        <div class="section-heading">
+          <h4>도서 검색</h4>
+          <h4>선택한 도서</h4>
+        </div>
+        <div class="search-book-columns">
+          <div class="search-box">
+            <div class="search-input-row">
+              <input id="searchInput" placeholder="도서명 또는 저자를 입력하세요" type="text"/>
+              <button class="button secondary" id="searchBtn">검색</button>
+            </div>
+            <div class="search-results" id="searchResults"></div>
+          </div>
+          <div class="selected-book">
+            <div class="selected-book-details empty" id="selectedBookDetails">
+              <p class="selected-book-placeholder">검색 결과에서 추가할 도서를 선택하세요.</p>
+            </div>
+            <div class="selected-book-input">
+              <label for="totalPagesInput"><b>총 페이지</b></label>
+              <div class="search-input-row">
+                <input id="totalPagesInput" min="1" placeholder="예: 320" type="number"/>
+              </div>
+            </div>
+            <button class="button primary" disabled id="submitAddBookBtn">내 서재에 추가</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div class="modal hidden" id="editBookModal">
+  <div class="modal-content modal-edit">
+    <header>
+      <h3>도서 정보 수정</h3>
+      <button class="icon-button" id="closeEditModalBtn">✕</button>
+    </header>
+    <div class="modal-body edit-modal-body">
+      <div class="selected-book-details empty" id="editBookInfo">
+        <p>수정할 도서를 선택하세요.</p>
+      </div>
+      <div class="edit-book-form">
+        <div class="form-field">
+          <label for="editCurrentPageInput">현재 페이지</label>
+          <input id="editCurrentPageInput" min="1" placeholder="현재 페이지를 입력" type="number"/>
+        </div>
+        <div class="form-field">
+          <label for="editStateSelect">상태 변경</label>
+          <select id="editStateSelect"></select>
+        </div>
+        <p class="input-hint">⚠️ 두 값을 동시에 수정할 수 없습니다.</p>
+      </div>
+    </div>
+    <footer class="modal-footer">
+      <button class="button primary" disabled id="submitEditBookBtn">수정</button>
+    </footer>
+  </div>
+</div>
+
+<div class="toast hidden" id="toast"></div>
+
+<script src="/js/main.js" type="module"></script>
+</body>
+</html>

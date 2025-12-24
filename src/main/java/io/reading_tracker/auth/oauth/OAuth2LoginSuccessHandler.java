@@ -107,6 +107,6 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
     response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-    getRedirectStrategy().sendRedirect(request, response, "http://localhost:3000");
+    getRedirectStrategy().sendRedirect(request, response, "http://localhost:8080");
   }
 }
