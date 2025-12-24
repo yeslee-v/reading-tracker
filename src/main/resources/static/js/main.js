@@ -236,7 +236,7 @@ function renderBookList(books = []) {
           <h3>${safeTitle}</h3>
           <div class="book-meta">${safeMeta}</div>
         </div>
-        <button class="button secondary button--compact" data-action="open-edit">수정</button>
+        <button class="button secondary" data-action="open-edit">수정</button>
       </div>
       <div class="book-progress">
         <div class="progress-bar"><span style="width: ${book.progress}%"></span></div>

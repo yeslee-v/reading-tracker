@@ -133,18 +133,11 @@ label {
 
 .summary-card strong {
   font-size: 2rem;
-}
-
-.summary-card[data-state='IN_PROGRESS'] strong {
-  color: var(--accent);
-}
-
-.summary-card[data-state='COMPLETED'] strong {
-  color: var(--success);
-}
-
-.summary-card[data-state='ARCHIVED'] strong {
   color: var(--text-muted);
+}
+
+.summary-card.active strong {
+  color: var(--accent);
 }
 
 .summary-card.active {
@@ -445,7 +438,7 @@ label {
 .selected-book {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.8rem;
 }
 
 .selected-book h4 {
@@ -455,8 +448,8 @@ label {
 .selected-book-input {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  margin-top: 1rem;
+  gap: 0.5rem;
+  margin: 1rem 0;
 }
 
 .toast {
@@ -537,7 +530,6 @@ label {
   display: block;
 }
 
-
 .button--compact {
-  padding: 0.4rem 0.9rem;
+  padding: 0.6rem 0.9rem;
 }
