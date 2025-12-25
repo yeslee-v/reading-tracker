@@ -151,7 +151,9 @@ async function loadCurrentUser() {
       return;
     }
 
-    currentUser = await apiRequest('/api/users/me');
+    if (currentUser == null) {
+      currentUser = await apiRequest('/api/users/me');
+    }
     renderUserPanel();
     showApp();
     await loadBooks();
@@ -167,6 +169,7 @@ function renderUserPanel() {
 }
 
 function showUnauthenticated() {
+  currentUser = null;
   elements.unauthenticated.classList.remove('hidden');
   elements.appContent.classList.add('hidden');
 }
