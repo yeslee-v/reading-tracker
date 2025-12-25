@@ -146,14 +146,14 @@ function populateStateSelect(selectElement) {
 async function loadCurrentUser() {
   try {
     const response = await apiRequest('/api/auth/user');
-    // TODO: /api/users/me를 호출하도록 변경해 DB 기준 최신 닉네임과 정보를 사용한다.
     if (!response || !response.authenticated) {
       showUnauthenticated();
       return;
     }
 
-    currentUser = response;
-    console.log(currentUser);
+    if (currentUser == null) {
+      currentUser = await apiRequest('/api/users/me');
+    }
     renderUserPanel();
     showApp();
     await loadBooks();
@@ -165,10 +165,11 @@ async function loadCurrentUser() {
 
 function renderUserPanel() {
   const nickname = currentUser.nickname ?? '사용자';
-  elements.userInfo.innerHTML = `<strong>${nickname}</strong>`;
+  elements.userInfo.innerHTML = `<strong>안녕하세요, ${nickname}님</strong>`;
 }
 
 function showUnauthenticated() {
+  currentUser = null;
   elements.unauthenticated.classList.remove('hidden');
   elements.appContent.classList.add('hidden');
 }

@@ -78,6 +78,7 @@ public class SecurityConfig {
     return http.build();
   }
 
+  /** 서버에서 html 반환하므로 cors 설정 불필요, 추후 프론트 분리용으로 유지 */
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
