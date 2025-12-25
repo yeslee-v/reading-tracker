@@ -42,6 +42,8 @@ public class RedisConfig implements CachingConfigurer {
 
     cacheConfiguration.put("naverBookSearch", defaultConfig.entryTtl(Duration.ofDays(1)));
     cacheConfiguration.put("userBookList", defaultConfig.entryTtl(Duration.ofHours(1)));
+    cacheConfiguration.put(
+        "userProfile", defaultConfig.entryTtl(Duration.ofDays(7))); // JWT 쿠키 TTL과 동일
 
     return RedisCacheManager.RedisCacheManagerBuilder.fromConnectionFactory(connectionFactory)
         .cacheDefaults(defaultConfig)
